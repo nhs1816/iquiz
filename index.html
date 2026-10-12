@@ -595,7 +595,12 @@ function profile(){
       <p class="note" style="text-align:left">지금 문제는 7살 단계예요. 다른 나이 단계는 준비 중이에요.</p>
       <button class="next" type="submit">${first?'시작하기':'저장하기'}</button>
       ${first?'':'<button class="linkbtn" type="button" id="pfBack">돌아가기</button>'}
-    </form>`;
+    </form>
+    ${first?'':`<section class="praise wipe"><h2>푼 기록 지우기</h2>
+      <p class="note" style="text-align:left">이 폰에 있는 점수, 도장판, 뽑기판, 남은 뽑기를 모두 지워요. 이름·나이·가족 코드는 그대로 둬요. 부모님 시트 기록은 시트에서 따로 지워야 해요.</p>
+      <button class="linkbtn" type="button" id="wipe" style="align-self:flex-start">기록 지우기…</button>
+      <div id="wipeAsk" hidden><p class="pmsg"><b>정말 지울까요?</b> 지우면 되돌릴 수 없어요.</p>
+        <div class="seg" style="margin-top:8px"><button class="next" type="button" id="wipeYes" style="background:var(--red)">지우기</button><button class="next" type="button" id="wipeNo">그만두기</button></div></div></section>`}`;
   const f=document.getElementById('pf');
   f.onsubmit=e=>{ e.preventDefault();
     const name=document.getElementById('pfName').value.trim(); if(!name) return;
@@ -603,6 +608,11 @@ function profile(){
     const c=document.getElementById('pfCode'); if(c) S.family=c.value.trim();
     save(); send({t:'profile'}); flush(); home(); };
   const b=document.getElementById('pfBack'); if(b) b.onclick=home;
+  const w=document.getElementById('wipe');
+  if(w){ const ask=document.getElementById('wipeAsk');
+    w.onclick=()=>{ ask.hidden=false; w.hidden=true; };
+    document.getElementById('wipeNo').onclick=()=>{ ask.hidden=true; w.hidden=false; };
+    document.getElementById('wipeYes').onclick=()=>{ Object.assign(S,{days:{}, seen:{}, wrong:[], tickets:0, wins:{}, outbox:[]}); newBoard(); save(); home(); }; }
   window.scrollTo(0,0);
 }
 
