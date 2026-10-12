@@ -456,7 +456,7 @@ const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-$
 const TODAY = ymd(new Date());
 
 // ───── 부모님 시트로 보내기 (웹앱에서만. 가족 코드를 넣은 기기만 보내요) ─────
-const ENDPOINT = "";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbx1AfjqkgLj3_7VZF5862JlqcujiG3gLrZtRjlj2Nx4x_OwV8KZ5sjqSwy0kxjFoZLz/exec";
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'x'+Date.now().toString(16)+Math.random().toString(16).slice(2,14)).toLowerCase();
 let flushing=false;
 function send(ev){
