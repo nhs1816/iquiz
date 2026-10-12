@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>아이퀴즈</title>
+<meta name="description" content="7살 아이를 위한 하루 10문제 퀴즈. 산수 3, 한글 2, 오늘 고른 주제 5.">
+<meta name="theme-color" content="#f5f8f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1d362b" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="아이퀴즈">
+<meta property="og:title" content="아이퀴즈 · 하루 10문제">
+<meta property="og:description" content="동물, 곤충, 경제, 한국사, 세계사, 지리, 우주. 산수와 한글도 같이 풀어요.">
+<meta property="og:url" content="https://nhs1816.github.io/iquiz/">
+<meta property="og:image" content="https://nhs1816.github.io/iquiz/icons/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="아이퀴즈">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Gowun+Dodum&family=Jua&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0;-webkit-tap-highlight-color:transparent}
+.wrap{padding-top:calc(20px + env(safe-area-inset-top,0px))!important;padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))!important}
+.install{max-width:448px;margin:0 auto 32px;margin-inline:max(16px,calc(50% - 224px));background:var(--card);border:2px dashed var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:15px}
+.install p{margin:0;flex:1 1 220px}
+.install button{border:none;border-radius:10px;padding:8px 14px;background:var(--ink);color:var(--paper);font-family:var(--f-display);font-size:16px}
+.install button.plain{background:none;color:var(--muted)}
+</style>
+</head>
+<body>
+<style>
+/* 깍두기 공책 위에서 푸는 하루 10문제. 맞으면 빨간 색연필 동그라미, 다 풀면 '참 잘했어요' 도장. 다크 모드는 칠판. */
+:root{
+  --paper:#f5f8f0; --grid:#dde8d6; --card:#ffffff; --ink:#1f2d27; --muted:#62736a;
+  --red:#d7342a; --pencil:#f3b80c; --line:#c9d6c2; --soft:#eef3e8;
+  --f-display:"Jua","Gowun Dodum",system-ui,sans-serif;
+  --f-body:"Gowun Dodum",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  --f-hand:"Gaegu","Jua",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#1d362b; --grid:#264436; --card:#24402f; --ink:#eef2e8; --muted:#a6bcae;
+  --red:#ff7b6c; --pencil:#ffd24d; --line:#3a5c4a; --soft:#2a4a3a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1d362b; --grid:#264436; --card:#24402f; --ink:#eef2e8; --muted:#a6bcae;
+  --red:#ff7b6c; --pencil:#ffd24d; --line:#3a5c4a; --soft:#2a4a3a; color-scheme:dark}
+
+html,body{min-height:100%}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  color:var(--ink); font-family:var(--f-body); font-size:17px; line-height:1.55;
+}
+.wrap{max-width:480px; margin:0 auto; padding-inline:16px; padding-block:20px 48px; display:flex; flex-direction:column; gap:20px}
+button{font:inherit; color:inherit; cursor:pointer}
+button:focus-visible{outline:3px solid var(--pencil); outline-offset:3px}
+
+/* 홈 */
+.top{display:flex; align-items:flex-end; justify-content:space-between; gap:12px}
+.logo{font-family:var(--f-display); font-size:44px; line-height:1; letter-spacing:-.5px; margin:0}
+.logo b{color:var(--red); font-weight:400}
+.date{color:var(--muted); font-size:15px; text-align:right}
+.board{background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px 14px 12px; display:flex; flex-direction:column; gap:10px}
+.board-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px}
+.board-head h2{font-family:var(--f-display); font-weight:400; font-size:20px; margin:0}
+.streak{font-family:var(--f-hand); font-size:20px; color:var(--red)}
+.week{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; text-align:center}
+.day{display:flex; flex-direction:column; align-items:center; gap:4px; font-size:13px; color:var(--muted)}
+.day .dot{box-sizing:border-box; width:100%; max-width:38px; aspect-ratio:1; border-radius:50%; border:2px dashed var(--line); display:grid; place-items:center; font-family:var(--f-hand); font-size:13px; color:var(--red); line-height:1}
+.day.on .dot{border:2.5px double var(--red); transform:rotate(-12deg)}
+.day.today span{color:var(--ink); font-weight:700}
+
+.ask{font-family:var(--f-display); font-size:24px; margin:4px 0 0}
+.tiles{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.tile{position:relative; background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px 12px; display:flex; flex-direction:column; align-items:flex-start; gap:6px; text-align:left; box-shadow:3px 3px 0 var(--ink); transition:transform .1s, box-shadow .1s}
+.tile:active{transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink)}
+.tile .ic{font-size:32px; line-height:1}
+.tile .nm{font-family:var(--f-display); font-size:21px; line-height:1.1}
+.tile .sub{display:block; font-family:var(--f-body); font-size:13px; color:var(--muted)}
+.tile .done{position:absolute; right:8px; top:6px; font-family:var(--f-hand); color:var(--red); font-size:17px; border:2px solid var(--red); border-radius:50%; width:40px; height:40px; display:grid; place-items:center; transform:rotate(-10deg); background:var(--card)}
+.note{font-size:13px; color:var(--muted); text-align:center; margin:0}
+
+/* 퀴즈 */
+.qbar{display:flex; align-items:center; gap:12px}
+.back{white-space:nowrap; background:none; border:none; font-size:15px; color:var(--muted); padding:6px 2px}
+.dots{display:flex; gap:5px; flex:1; justify-content:flex-end}
+.dots i{width:14px; height:14px; border-radius:50%; border:2px solid var(--line); display:block}
+.dots i.cur{border-color:var(--ink)}
+.dots i.ok{background:var(--red); border-color:var(--red)}
+.dots i.no{background:var(--line); border-color:var(--line)}
+.qcard{background:var(--card); border:2px solid var(--ink); border-radius:16px; padding:18px 18px 22px; display:flex; flex-direction:column; gap:12px; align-items:center; text-align:center}
+.qtag{font-size:13px; color:var(--muted); background:var(--soft); border-radius:99px; padding:2px 12px}
+.pic{font-size:64px; line-height:1.15; word-break:break-all; max-width:100%}
+.pic.many{font-size:38px; letter-spacing:4px}
+.qtext{font-family:var(--f-display); font-size:26px; line-height:1.35; text-wrap:balance; margin:0}
+.choices{display:flex; flex-direction:column; gap:14px}
+.choice{position:relative; background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px 16px; font-family:var(--f-display); font-size:24px; text-align:center; min-height:62px}
+.choice:disabled{cursor:default; color:var(--ink); opacity:1}
+.choice.dim{opacity:.45}
+.mark{position:absolute; left:-10px; top:-10px; width:calc(100% + 20px); height:calc(100% + 20px); pointer-events:none; overflow:visible}
+.mark path{fill:none; stroke:var(--red); stroke-width:4; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1; animation:draw .45s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.fb{background:var(--soft); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:6px}
+.fb h3{font-family:var(--f-hand); font-size:28px; margin:0; color:var(--red); line-height:1.1}
+.fb p{margin:0}
+.next{background:var(--ink); color:var(--paper); border:none; border-radius:14px; padding:16px; font-family:var(--f-display); font-size:22px}
+
+/* 결과 */
+.result{display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center}
+.score{font-family:var(--f-display); font-size:56px; line-height:1; font-variant-numeric:tabular-nums}
+.score small{font-size:26px; color:var(--muted)}
+.stamp{width:150px; height:150px; border-radius:50%; border:5px double var(--red); color:var(--red); display:grid; place-items:center; font-family:var(--f-hand); font-size:30px; line-height:1.05; transform:rotate(-14deg); animation:stampin .35s cubic-bezier(.3,1.6,.6,1) both; background:var(--card)}
+@keyframes stampin{from{transform:rotate(-14deg) scale(1.5); opacity:.2}to{transform:rotate(-14deg) scale(1); opacity:1}}
+.review{width:100%; text-align:left; background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:10px}
+.review h3{font-family:var(--f-display); font-weight:400; font-size:20px; margin:0}
+.review li{margin:0}
+.review ul{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px}
+.review .ans{color:var(--red); font-weight:700}
+.home{width:100%}
+@media (prefers-reduced-motion: reduce){.mark path{animation:none; stroke-dashoffset:0}.stamp{animation:none}}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<div class="install" id="install" hidden><p id="installText">홈 화면에 설치하면 앱처럼 바로 열 수 있어요.</p>
+<button id="installBtn">설치하기</button><button id="installClose" class="plain">닫기</button></div>
+
+<script>
+// ───── 문제은행 (7살 · 글 읽기 시작한 아이) ─────
+// [질문, 정답, 오답1, 오답2, 설명, 그림]
+const TOPICS = [
+  {id:'animal', name:'동물', ic:'🦁'},
+  {id:'bug', name:'곤충', ic:'🐞'},
+  {id:'money', name:'경제', ic:'🪙'},
+  {id:'korea', name:'한국사', ic:'👑'},
+  {id:'world', name:'세계사', ic:'🗿'},
+  {id:'geo', name:'지리', ic:'🗺️'},
+  {id:'space', name:'우주', ic:'🪐'},
+  {id:'mix', name:'섞어서', ic:'🎲'},
+];
+const BANK = {
+animal:[
+ ['코가 아주 긴 동물은?','코끼리','기린','하마','코끼리는 긴 코로 물도 마시고 물건도 집어요.','🐘'],
+ ['목이 가장 긴 동물은?','기린','얼룩말','낙타','기린은 긴 목으로 높은 나무의 잎을 먹어요.','🦒'],
+ ['날지 못하지만 헤엄을 잘 치는 새는?','펭귄','독수리','참새','펭귄은 날개를 물고기 지느러미처럼 써서 헤엄쳐요.','🐧'],
+ ['고래는 무엇으로 숨을 쉴까요?','허파','아가미','피부','고래는 물고기가 아니에요. 물 위로 올라와 허파로 숨을 쉬어요.','🐋'],
+ ['등에 혹이 있는 동물은?','낙타','말','소','낙타 혹에는 지방이 들어 있어서 오래 굶어도 버틸 수 있어요.','🐪'],
+ ['올챙이가 자라면 무엇이 될까요?','개구리','물고기','도마뱀','올챙이는 뒷다리, 앞다리가 나오고 꼬리가 없어지면서 개구리가 돼요.','🐸'],
+ ['거꾸로 매달려서 자는 동물은?','박쥐','다람쥐','토끼','박쥐는 동굴 천장에 거꾸로 매달려 잠을 자요.','🦇'],
+ ['캥거루는 아기를 어디에 넣고 다닐까요?','배 주머니','등 위','입속','캥거루 엄마 배에는 아기를 넣는 주머니가 있어요.','🦘'],
+ ['겨울에 굴에 들어가 겨울잠을 자는 동물은?','곰','호랑이','사자','곰은 가을에 많이 먹어 두고 겨울에는 굴에서 잠을 자요.','🐻'],
+ ['검은색과 흰색 줄무늬가 있는 말은?','얼룩말','조랑말','당나귀','얼룩말은 줄무늬가 동물마다 조금씩 달라요.','🦓'],
+ ['우리가 마시는 우유를 주는 동물은?','젖소','돼지','닭','젖소에서 짠 젖으로 우유를 만들어요.','🐄'],
+ ['동물의 왕이라고 불리는 동물은?','사자','고양이','여우','수사자는 목 둘레에 멋진 갈기가 있어요.','🦁'],
+ ['등에 딱딱한 껍데기를 지고 다니는 동물은?','거북','개구리','뱀','거북은 위험하면 머리와 다리를 껍데기 속에 숨겨요.','🐢'],
+ ['카멜레온이 바꿀 수 있는 것은?','몸 색깔','다리 개수','목소리','카멜레온은 기분이나 주변에 따라 몸 색깔이 바뀌어요.','🦎'],
+ ['지구에서 가장 큰 동물은?','대왕고래','코끼리','기린','대왕고래는 버스 두세 대를 이어 놓은 것만큼 길어요.','🐳'],
+ ['땅 위에서 가장 빨리 달리는 동물은?','치타','거북','코끼리','치타는 자동차만큼 빠르게 달릴 수 있어요.','🐆'],
+ ['다리가 하나도 없는 동물은?','뱀','도마뱀','악어','뱀은 다리 없이 몸을 구불구불 움직여서 기어가요.','🐍'],
+ ['판다가 가장 좋아하는 먹이는?','대나무','생선','고기','판다는 하루 종일 대나무를 먹어요.','🐼'],
+ ['다람쥐가 겨울을 위해 모아 두는 것은?','도토리','돌멩이','나뭇잎','다람쥐는 도토리를 땅에 묻어 두었다가 꺼내 먹어요.','🐿️'],
+ ['부엉이는 언제 사냥을 할까요?','밤','아침','점심','부엉이는 밤에 눈이 아주 잘 보여서 밤에 사냥해요.','🦉'],
+ ['똑똑하고 휘파람 같은 소리로 친구를 부르는 바다 동물은?','돌고래','오징어','조개','돌고래는 소리로 서로 이야기를 나눠요.','🐬'],
+ ['이빨이 빠져도 계속 새로 나는 바다 동물은?','상어','문어','해파리','상어는 평생 이빨이 계속 새로 나요.','🦈'],
+ ['문어 다리는 몇 개일까요?','8개','6개','10개','문어는 빨판이 달린 다리가 8개 있어요.','🐙'],
+ ['북극에 사는 하얀 곰은?','북극곰','반달가슴곰','판다','북극곰은 털이 두꺼워서 얼음 위에서도 따뜻해요.','🐻‍❄️'],
+ ['알을 낳는 동물은?','닭','강아지','고양이','닭은 알을 낳고, 강아지와 고양이는 새끼를 낳아요.','🐔'],
+],
+bug:[
+ ['곤충의 다리는 몇 개일까요?','6개','8개','4개','곤충은 모두 다리가 6개예요.','🐜'],
+ ['곤충의 몸은 몇 부분으로 나뉠까요?','3부분','2부분','5부분','곤충의 몸은 머리, 가슴, 배 세 부분이에요.','🐝'],
+ ['다리가 8개라서 곤충이 아닌 것은?','거미','개미','나비','거미는 다리가 8개라서 곤충이 아니에요.','🕷️'],
+ ['애벌레가 자라면 무엇이 될까요?','나비','거미','지렁이','알 → 애벌레 → 번데기 → 나비 순서로 자라요.','🐛'],
+ ['나비가 되기 전에 단단한 껍질 속에서 지내는 때는?','번데기','알','올챙이','번데기 속에서 애벌레 몸이 나비로 바뀌어요.','🦋'],
+ ['꽃에서 꿀을 모으는 곤충은?','꿀벌','모기','파리','꿀벌은 꽃꿀을 모아서 벌집에 꿀로 저장해요.','🌼'],
+ ['줄지어 다니며 함께 땅속에 집을 짓는 곤충은?','개미','메뚜기','나비','개미는 여럿이 힘을 합쳐 일해요.','🐜'],
+ ['밤에 꽁무니에서 반짝반짝 빛을 내는 곤충은?','반딧불이','무당벌레','잠자리','반딧불이는 배 끝에서 빛을 내서 친구를 찾아요.','✨'],
+ ['빨간 등에 까만 점이 있는 곤충은?','무당벌레','사슴벌레','매미','무당벌레는 식물을 괴롭히는 진딧물을 먹어 줘요.','🐞'],
+ ['여름에 나무에서 "맴맴" 우는 곤충은?','매미','개미','나비','매미는 오랫동안 땅속에서 살다가 나와서 여름에 울어요.','🌳'],
+ ['머리에 커다란 뿔이 있는 곤충은?','장수풍뎅이','모기','개미','장수풍뎅이 수컷은 머리에 큰 뿔이 있어요.','🪲'],
+ ['사람 피를 빨아 먹는 곤충은?','모기','나비','꿀벌','피를 빠는 건 알을 낳으려는 암컷 모기예요.','🦟'],
+ ['뒷다리가 길어서 높이 뛰는 곤충은?','메뚜기','개미','무당벌레','메뚜기는 힘센 뒷다리로 폴짝 뛰어요.','🦗'],
+ ['눈이 크고 긴 꼬리로 연못 위를 날아다니는 곤충은?','잠자리','개미','무당벌레','잠자리는 큰 눈으로 사방을 한꺼번에 볼 수 있어요.','🌾'],
+ ['곤충의 더듬이는 무슨 일을 할까요?','냄새 맡고 더듬기','밥 먹기','걷기','곤충은 더듬이로 냄새를 맡고 주변을 느껴요.','🐜'],
+ ['개미집에서 알을 낳는 개미는?','여왕개미','일개미','병정개미','여왕개미가 알을 낳고, 일개미가 돌봐요.','👑'],
+ ['꿀벌의 침은 몸 어디에 있을까요?','배 끝','입','더듬이','꿀벌은 배 끝에 있는 침으로 집을 지켜요.','🐝'],
+ ['낫처럼 생긴 앞다리로 먹이를 잡는 곤충은?','사마귀','나비','매미','사마귀는 앞다리를 모으고 가만히 기다리다 먹이를 잡아요.','🌿'],
+ ['나비 애벌레가 주로 먹는 것은?','나뭇잎','돌멩이','흙','애벌레는 잎을 많이 먹고 쑥쑥 자라요.','🍃'],
+ ['거미가 먹이를 잡으려고 만드는 것은?','거미줄','둥지','굴','거미줄은 끈적끈적해서 날아온 벌레가 붙어요.','🕸️'],
+ ['소금쟁이는 어디 위를 걸어 다닐까요?','물 위','나무 위','눈 위','소금쟁이는 다리 털 덕분에 물 위에 떠서 걸어요.','💧'],
+ ['쇠똥구리가 동그랗게 굴리는 것은?','동물 똥','돌멩이','열매','쇠똥구리는 똥을 굴려서 먹이로 쓰고 알도 낳아요.','🪲'],
+ ['누에가 만든 고치에서 뽑는 실은?','비단실','털실','거미줄','옛날부터 누에고치에서 실을 뽑아 비단을 만들었어요.','🧵'],
+ ['꽃가루를 옮겨서 열매가 열리게 돕는 곤충은?','벌','모기','바퀴벌레','벌과 나비가 꽃가루를 옮겨 줘야 열매가 열려요.','🌸'],
+ ['사슴뿔처럼 생긴 큰 턱이 있는 곤충은?','사슴벌레','꿀벌','메뚜기','사슴벌레 수컷은 큰 턱으로 힘겨루기를 해요.','🦌'],
+],
+money:[
+ ['가게에서 물건을 살 때 내는 것은?','돈','돌멩이','종이컵','물건을 사려면 그만큼의 돈을 내요.','🛒'],
+ ['100원 동전 2개는 모두 얼마일까요?','200원','100원','20원','100원과 100원을 더하면 200원이에요.','🪙🪙'],
+ ['10원 동전 5개는 모두 얼마일까요?','50원','15원','500원','10, 20, 30, 40, 50. 모두 50원이에요.','🪙🪙🪙🪙🪙'],
+ ['500원짜리 과자를 사려면 100원 동전이 몇 개 필요할까요?','5개','3개','10개','100원이 5개 모이면 500원이에요.','🍪'],
+ ['50원 동전 2개는 모두 얼마일까요?','100원','52원','70원','50원과 50원을 더하면 100원이에요.','🪙🪙'],
+ ['100원 동전 1개와 10원 동전 3개는 모두 얼마일까요?','130원','103원','400원','100원에 10원 세 개를 더하면 130원이에요.','🪙'],
+ ['1000원을 내고 700원짜리 빵을 사면 거스름돈은?','300원','700원','1000원','1000원에서 700원을 빼면 300원이 남아요.','🍞'],
+ ['만 원 지폐에 그려진 왕은?','세종대왕','이순신','단군왕검','만 원짜리에는 한글을 만든 세종대왕이 있어요.','💵'],
+ ['오만 원 지폐에 그려진 사람은?','신사임당','유관순','세종대왕','오만 원짜리에는 화가이자 학자였던 신사임당이 있어요.','💴'],
+ ['100원 동전에 그려진 사람은?','이순신 장군','세종대왕','방정환','100원짜리에는 이순신 장군 얼굴이 있어요.','🪙'],
+ ['500원 동전에 그려진 새는?','학','참새','독수리','500원짜리에는 하늘을 나는 학(두루미)이 있어요.','🕊️'],
+ ['돈을 안전하게 맡겨 두는 곳은?','은행','병원','도서관','은행에 돈을 맡기면 잃어버릴 걱정이 줄어요.','🏦'],
+ ['돼지 저금통에 돈을 넣어 모으는 것을 뭐라고 할까요?','저금','운동','청소','돈을 조금씩 모으는 것을 저금이라고 해요.','🐷'],
+ ['꼭 필요한 것은 무엇일까요?','밥','장난감 로봇','스티커','밥은 꼭 필요한 것이고, 장난감은 갖고 싶은 것이에요.','🍚'],
+ ['추운 겨울에 꼭 필요한 것은?','두꺼운 옷','새 게임기','인형','갖고 싶은 것보다 필요한 것을 먼저 사야 해요.','🧥'],
+ ['가게에서 물건을 파는 사람은?','상인','의사','소방관','물건을 사고파는 일을 하는 사람을 상인이라고 해요.','🏪'],
+ ['엄마 아빠가 회사에서 일하고 받는 돈은?','월급','용돈','세뱃돈','일을 하고 한 달마다 받는 돈을 월급이라고 해요.','💼'],
+ ['설날에 어른께 세배하고 받는 돈은?','세뱃돈','월급','거스름돈','세배를 하면 어른들이 덕담과 함께 세뱃돈을 주세요.','🧧'],
+ ['물건 값을 적어서 붙여 둔 것은?','가격표','이름표','달력','가격표를 보면 얼마인지 알 수 있어요.','🏷️'],
+ ['가을에 사과가 아주 많이 나오면 사과 값은 보통 어떻게 될까요?','싸져요','비싸져요','없어져요','물건이 많아지면 값이 내려가는 경우가 많아요.','🍎'],
+ ['은행에 돈을 맡겨 두면 은행이 조금 더 얹어 주는 돈은?','이자','용돈','벌금','은행은 돈을 맡겨 줘서 고맙다고 이자를 줘요.','🏦'],
+ ['받은 돈과 쓴 돈을 적어 두는 공책은?','용돈 기입장','그림일기','받아쓰기 공책','용돈 기입장을 쓰면 돈을 어디에 썼는지 알 수 있어요.','📒'],
+ ['우리나라 돈의 단위는?','원','달러','엔','우리나라는 원, 미국은 달러, 일본은 엔을 써요.','🇰🇷'],
+ ['미국에서 쓰는 돈은?','달러','원','엔','미국 돈은 달러예요.','🇺🇸'],
+ ['쌀을 기르는 일을 하는 사람은?','농부','어부','목수','농부가 기른 쌀을 우리가 사서 밥을 지어요.','🌾'],
+],
+korea:[
+ ['한글을 만든 왕은?','세종대왕','이순신','단군왕검','세종대왕은 백성이 쉽게 글을 읽도록 한글을 만들었어요.','📜'],
+ ['거북선으로 바다에서 나라를 지킨 장군은?','이순신','세종대왕','을지문덕','이순신 장군은 거북선과 함께 바다에서 싸워 이겼어요.','🐢'],
+ ['우리나라 역사에서 처음 세워진 나라는?','고조선','고려','조선','고조선은 우리 역사에서 첫 번째 나라예요.','⛰️'],
+ ['고조선을 세운 사람은?','단군왕검','주몽','왕건','단군왕검이 고조선을 세웠다고 전해져요.','👑'],
+ ['단군 이야기에서 사람이 된 동물은?','곰','호랑이','토끼','곰은 동굴에서 참고 기다려서 사람이 되었어요.','🐻'],
+ ['단군 이야기에서 곰이 동굴에서 먹은 것은?','쑥과 마늘','떡과 꿀','사과와 배','곰은 쑥과 마늘만 먹으며 백 일을 참았어요.','🧄'],
+ ['우리나라 국기의 이름은?','태극기','성조기','오륜기','태극기 가운데에는 빨강과 파랑 태극 무늬가 있어요.','🇰🇷'],
+ ['태극기 가운데 동그라미는 무슨 색일까요?','빨강과 파랑','노랑과 초록','검정과 하양','빨강과 파랑이 어우러진 모양을 태극이라고 해요.','🇰🇷'],
+ ['우리나라를 대표하는 꽃은?','무궁화','장미','해바라기','무궁화는 "끝없이 피는 꽃"이라는 뜻이에요.','🌺'],
+ ['8월 15일 광복절은 어떤 날일까요?','나라를 되찾은 날','한글을 만든 날','어린이날','1945년 8월 15일, 우리는 빼앗겼던 나라를 되찾았어요.','🎌'],
+ ['한글날은 몇 월 며칠일까요?','10월 9일','5월 5일','8월 15일','10월 9일은 한글을 널리 알린 것을 기념하는 날이에요.','📅'],
+ ['어린이날을 만든 분은?','방정환','세종대왕','이순신','방정환 선생님은 "어린이"라는 말을 널리 쓰게 한 분이에요.','🧒'],
+ ['3·1 운동 때 "대한 독립 만세!"를 외친 학생은?','유관순','신사임당','허준','유관순은 학생이던 나이에 독립 만세 운동에 나섰어요.','🙌'],
+ ['세종대왕 때 해시계와 물시계를 만든 과학자는?','장영실','김홍도','정약용','장영실은 시간을 알려 주는 시계를 만들었어요.','⏰'],
+ ['세종대왕 때 비가 얼마나 왔는지 재려고 만든 기구는?','측우기','망원경','나침반','측우기 덕분에 농사에 필요한 비의 양을 알 수 있었어요.','🌧️'],
+ ['고구려를 세운 사람은?','주몽','왕건','이성계','주몽은 활을 아주 잘 쏘았다고 전해져요.','🏹'],
+ ['고려를 세운 사람은?','왕건','주몽','이성계','왕건이 세운 고려에서 "코리아"라는 이름이 나왔어요.','🏯'],
+ ['조선을 세운 사람은?','이성계','왕건','주몽','이성계가 조선을 세우고 한양(지금의 서울)을 도읍으로 삼았어요.','🏯'],
+ ['신라 사람들이 별을 보려고 쌓은 돌탑은?','첨성대','석가탑','남산타워','경주에 있는 첨성대는 아주 오래된 별 관측대예요.','🌟'],
+ ['불국사와 석굴암이 있는 도시는?','경주','서울','부산','경주는 신라의 수도였어요.','🛕'],
+ ['조선의 왕이 살던 서울의 궁궐은?','경복궁','첨성대','석굴암','경복궁은 조선을 세우고 처음 지은 궁궐이에요.','🏯'],
+ ['옛날부터 입어 온 우리나라 옷은?','한복','기모노','드레스','명절에는 한복을 입기도 해요.','👘'],
+ ['설날에 먹는 음식은?','떡국','송편','팥죽','설날에 떡국을 먹으면 한 살 더 먹는다고 해요.','🥣'],
+ ['추석에 빚어 먹는 떡은?','송편','떡국','팥죽','추석에는 반달 모양 송편을 빚어 먹어요.','🌕'],
+ ['밤이 가장 긴 동짓날에 먹는 음식은?','팥죽','송편','떡국','옛날 사람들은 빨간 팥이 나쁜 기운을 쫓는다고 믿었어요.','🫘'],
+],
+world:[
+ ['이집트에 있는 커다란 세모 모양 건축물은?','피라미드','만리장성','에펠탑','피라미드는 돌을 쌓아 만든 거대한 건축물이에요.','🔺'],
+ ['피라미드는 원래 무엇이었을까요?','왕의 무덤','학교','시장','이집트 왕(파라오)의 무덤으로 지어졌어요.','🔺'],
+ ['피라미드 앞에 있는, 사람 얼굴에 사자 몸을 한 조각상은?','스핑크스','용','유니콘','스핑크스는 피라미드를 지키는 것처럼 앉아 있어요.','🦁'],
+ ['중국에 있는 아주아주 긴 성벽은?','만리장성','피라미드','콜로세움','만리장성은 적이 들어오지 못하게 쌓은 성벽이에요.','🧱'],
+ ['만리장성은 왜 쌓았을까요?','적을 막으려고','물을 막으려고','놀이터로 쓰려고','북쪽에서 쳐들어오는 적을 막으려고 쌓았어요.','🛡️'],
+ ['프랑스 파리에 있는 높은 철탑은?','에펠탑','남산타워','피사의 사탑','에펠탑은 철로 만든 탑이에요.','🗼'],
+ ['비스듬히 기울어진 "피사의 사탑"이 있는 나라는?','이탈리아','영국','중국','피사의 사탑은 땅이 물러서 기울어졌어요.','🇮🇹'],
+ ['로마에 있는 커다란 둥근 경기장은?','콜로세움','피라미드','타지마할','옛날 로마 사람들이 경기를 구경하던 곳이에요.','🏟️'],
+ ['올림픽이 처음 시작된 나라는?','그리스','미국','한국','아주 옛날 그리스 올림피아에서 올림픽이 시작됐어요.','🏅'],
+ ['비행기를 처음 만들어 하늘을 난 형제는?','라이트 형제','그림 형제','마리오 형제','라이트 형제는 1903년에 처음으로 비행기를 날렸어요.','✈️'],
+ ['전구를 오래 켜지게 만든 발명왕은?','에디슨','뉴턴','모차르트','에디슨은 수많은 실험 끝에 오래 켜지는 전구를 만들었어요.','💡'],
+ ['떨어지는 사과를 보고 중력을 떠올렸다는 과학자는?','뉴턴','에디슨','콜럼버스','뉴턴은 물건이 땅으로 떨어지는 까닭을 연구했어요.','🍎'],
+ ['배를 타고 대서양을 건너 아메리카에 간 탐험가는?','콜럼버스','뉴턴','나폴레옹','콜럼버스는 1492년에 아메리카에 도착했어요.','⛵'],
+ ['달에 처음 발자국을 남긴 사람은?','닐 암스트롱','콜럼버스','에디슨','1969년, 닐 암스트롱이 처음으로 달 위를 걸었어요.','👣'],
+ ['미국 뉴욕에 있는, 횃불을 든 커다란 동상은?','자유의 여신상','스핑크스','다비드상','자유의 여신상은 프랑스가 미국에 선물했어요.','🗽'],
+ ['인도에 있는 하얀 대리석 건물은?','타지마할','에펠탑','콜로세움','타지마할은 왕이 사랑한 왕비를 위해 지은 무덤이에요.','🕌'],
+ ['미라를 만든 것으로 유명한 나라는?','이집트','프랑스','캐나다','옛날 이집트 사람들은 죽은 사람의 몸을 미라로 만들었어요.','🏺'],
+ ['공룡은 사람보다 먼저 살았을까요, 나중에 살았을까요?','먼저 살았어요','나중에 살았어요','같이 살았어요','공룡은 사람이 나타나기 아주아주 오래전에 사라졌어요.','🦕'],
+ ['아주 옛날 사람들이 돌을 깨서 도구를 만들던 시대는?','석기 시대','우주 시대','컴퓨터 시대','"석"은 돌이라는 뜻이에요.','🪨'],
+ ['종이를 처음 만든 나라는?','중국','미국','프랑스','종이는 옛날 중국에서 처음 만들어졌어요.','📄'],
+ ['방향을 알려 주는 나침반을 처음 쓴 나라는?','중국','브라질','호주','나침반 바늘은 늘 북쪽과 남쪽을 가리켜요.','🧭'],
+ ['"모나리자"를 그린 화가는?','레오나르도 다빈치','피카소','고흐','다빈치는 그림도 그리고 발명도 한 사람이에요.','🖼️'],
+ ['노란 "해바라기" 그림으로 유명한 화가는?','고흐','다빈치','모차르트','고흐는 밝은 색으로 해바라기를 여러 번 그렸어요.','🌻'],
+ ['모차르트는 무엇을 만든 사람일까요?','음악','그림','건물','모차르트는 아주 어릴 때부터 곡을 지은 음악가예요.','🎹'],
+ ['노벨상을 만든 사람은?','노벨','에디슨','뉴턴','노벨이 남긴 재산으로 노벨상이 생겼어요.','🏆'],
+],
+geo:[
+ ['우리나라의 수도는?','서울','부산','제주','나라의 중심 도시를 수도라고 해요.','🏙️'],
+ ['우리나라에서 가장 큰 섬은?','제주도','울릉도','독도','제주도에는 한라산이 있어요.','🏝️'],
+ ['우리나라 동쪽 끝에 있는 섬은?','독도','제주도','강화도','독도는 동해에 있는 우리 땅이에요.','🇰🇷'],
+ ['한반도에서 가장 높은 산은?','백두산','한라산','남산','백두산 꼭대기에는 천지라는 호수가 있어요. 남쪽에서 가장 높은 산은 한라산이에요.','🏔️'],
+ ['제주도에 있는 산은?','한라산','설악산','지리산','한라산은 옛날 화산이 터져서 생긴 산이에요.','🌋'],
+ ['우리나라는 몇 쪽이 바다와 닿아 있을까요?','세 쪽','한 쪽','네 쪽','동쪽, 서쪽, 남쪽 세 쪽이 바다예요.','🌊'],
+ ['세계에서 가장 넓은 바다는?','태평양','대서양','인도양','태평양은 모든 땅을 합친 것보다 넓어요.','🌊'],
+ ['세계에서 가장 큰 대륙은?','아시아','아프리카','유럽','우리나라도 아시아에 있어요.','🌏'],
+ ['우리나라는 어느 대륙에 있을까요?','아시아','유럽','아프리카','우리나라, 중국, 일본은 모두 아시아에 있어요.','🌏'],
+ ['펭귄이 많이 사는 아주 추운 대륙은?','남극','아프리카','유럽','남극은 땅이 두꺼운 얼음으로 덮여 있어요.','🧊'],
+ ['세계에서 가장 높은 산은?','에베레스트','백두산','후지산','에베레스트산은 구름보다 높이 솟아 있어요.','🏔️'],
+ ['아프리카에 있는 아주 넓은 모래 사막은?','사하라 사막','한강','알프스','사하라 사막은 덥고 비가 거의 오지 않아요.','🏜️'],
+ ['서울 한가운데를 흐르는 강은?','한강','낙동강','나일강','한강은 서울을 남쪽과 북쪽으로 나눠요.','🌉'],
+ ['지도에서 위쪽은 보통 어느 방향일까요?','북쪽','남쪽','동쪽','지도는 보통 위가 북쪽이에요.','🧭'],
+ ['아침에 해가 떠오르는 방향은?','동쪽','서쪽','북쪽','해는 동쪽에서 떠서 서쪽으로 져요.','🌅'],
+ ['저녁에 해가 지는 방향은?','서쪽','동쪽','남쪽','해는 서쪽으로 져요.','🌇'],
+ ['지구를 작게 만든 지구본은 무슨 모양일까요?','공 모양','네모 모양','세모 모양','지구는 둥근 공 모양이에요.','🌍'],
+ ['바다 건너 우리나라 동쪽에 있는 섬나라는?','일본','중국','미국','일본은 여러 섬으로 이루어진 나라예요.','🗾'],
+ ['세계에서 땅이 가장 넓은 나라는?','러시아','한국','일본','러시아는 아시아와 유럽에 걸쳐 있어요.','🗺️'],
+ ['캥거루가 사는 나라는?','호주','캐나다','프랑스','캥거루와 코알라는 호주에 살아요.','🦘'],
+ ['판다의 고향인 나라는?','중국','브라질','이집트','판다는 중국 산속 대나무 숲에 살아요.','🐼'],
+ ['캐나다 국기에 그려진 잎은?','단풍잎','장미','사과','캐나다에는 단풍나무가 많아요.','🍁'],
+ ['흰 바탕에 빨간 동그라미가 있는 국기는 어느 나라 것일까요?','일본','미국','캐나다','일본 국기는 해를 나타내요.','🇯🇵'],
+ ['바닷물은 무슨 맛일까요?','짠맛','단맛','매운맛','바닷물에는 소금이 녹아 있어요.','🌊'],
+ ['사방이 물로 둘러싸인 땅을 뭐라고 할까요?','섬','산','들판','섬에 가려면 배나 비행기를 타야 해요.','🏝️'],
+],
+space:[
+ ['우리가 살고 있는 행성은?','지구','화성','달','지구에는 물과 공기가 있어서 생물이 살 수 있어요.','🌍'],
+ ['낮에 하늘에서 밝게 빛나는 별은?','태양','달','북극성','태양도 스스로 빛을 내는 별이에요.','☀️'],
+ ['지구 둘레를 빙글빙글 도는 것은?','달','태양','화성','달은 한 달쯤 걸려 지구를 한 바퀴 돌아요.','🌙'],
+ ['붉은색으로 보이는 행성은?','화성','금성','목성','화성 흙에는 녹슨 쇠 같은 것이 많아서 붉게 보여요.','🔴'],
+ ['태양계에서 가장 큰 행성은?','목성','지구','수성','목성 안에 지구가 천 개도 넘게 들어갈 수 있어요.','🟠'],
+ ['커다란 고리로 유명한 행성은?','토성','화성','수성','토성 고리는 얼음과 돌 조각으로 되어 있어요.','🪐'],
+ ['태양과 가장 가까운 행성은?','수성','해왕성','지구','수성은 태양과 가장 가까워서 낮에는 아주 뜨거워요.','☀️'],
+ ['태양계 행성은 모두 몇 개일까요?','8개','9개','5개','수성, 금성, 지구, 화성, 목성, 토성, 천왕성, 해왕성이에요.','🪐'],
+ ['동그랗게 꽉 찬 달을 뭐라고 할까요?','보름달','초승달','반달','추석 밤에는 큰 보름달이 떠요.','🌕'],
+ ['손톱처럼 가느다란 달을 뭐라고 할까요?','초승달','보름달','반달','초승달은 저녁에 서쪽 하늘에서 잠깐 보여요.','🌒'],
+ ['우주선을 타고 우주에 가는 사람은?','우주비행사','잠수부','소방관','우주비행사는 오랫동안 훈련을 받고 우주에 가요.','👩‍🚀'],
+ ['우주정거장 안에서 사람은 어떻게 될까요?','둥둥 떠다녀요','무거워서 못 걸어요','잠이 안 와요','우주정거장에서는 몸무게를 거의 느끼지 못해서 둥둥 떠요.','🛰️'],
+ ['지구가 스스로 한 바퀴 도는 데 걸리는 시간은?','하루','일주일','한 달','지구가 한 바퀴 돌면 낮과 밤이 한 번씩 지나가요.','🌍'],
+ ['지구가 태양 둘레를 한 바퀴 도는 데 걸리는 시간은?','1년','하루','한 달','지구가 태양을 한 바퀴 돌면 한 살을 더 먹어요.','☀️'],
+ ['밤하늘에 휙 지나가는 별똥별의 다른 이름은?','유성','행성','위성','우주 돌멩이가 공기와 부딪혀 불타면서 빛나는 거예요.','🌠'],
+ ['멀리 있는 별을 크게 볼 때 쓰는 도구는?','망원경','현미경','돋보기','작은 것을 크게 볼 땐 현미경, 먼 것을 볼 땐 망원경이에요.','🔭'],
+ ['달에는 공기가 있을까요?','없어요','많아요','바람이 불어요','달에는 공기가 없어서 우주비행사는 우주복을 입어야 해요.','🌕'],
+ ['국자 모양으로 늘어선 일곱 개의 별은?','북두칠성','은하수','오로라','"칠"은 일곱이라는 뜻이에요.','✨'],
+ ['밤하늘에 강물처럼 길게 보이는 수많은 별 무리는?','은하수','무지개','오로라','은하수는 셀 수 없이 많은 별이 모여 있는 거예요.','🌌'],
+ ['우리나라가 만든 우주 로켓의 이름은?','누리호','거북선','KTX','누리호는 우리 기술로 만들어 우주로 날아갔어요.','🚀'],
+ ['태양은 지구보다 클까요?','훨씬 커요','더 작아요','똑같아요','태양 안에는 지구가 백만 개 넘게 들어가요.','☀️'],
+ ['지구 겉면에서 가장 넓은 것은?','바다','사막','얼음','지구 겉면의 대부분은 바다예요. 그래서 우주에서 보면 파랗게 보여요.','🌊'],
+ ['낮과 밤이 생기는 까닭은?','지구가 빙글빙글 돌아서','태양이 꺼져서','구름이 해를 가려서','지구가 돌면서 해를 보는 쪽은 낮, 반대쪽은 밤이 돼요.','🌗'],
+ ['화성을 돌아다니며 조사하는 로봇 자동차는?','탐사 로버','잠수함','기차','탐사 로버는 화성 흙과 돌을 조사해서 지구로 알려 줘요.','🤖'],
+ ['밤에 북쪽 하늘에서 거의 움직이지 않는 별은?','북극성','태양','화성','옛날 사람들은 북극성을 보고 길을 찾았어요.','⭐'],
+],
+hangul:[
+ ['그림에 맞는 낱말은?','사과','사가','사고','"사과"라고 써요.','🍎'],
+ ['그림에 맞는 낱말은?','코끼리','코기리','꼬끼리','"코끼리"라고 써요.','🐘'],
+ ['그림에 맞는 낱말은?','나비','나베','너비','"나비"라고 써요.','🦋'],
+ ['그림에 맞는 낱말은?','자동차','자동자','차동차','"자동차"라고 써요.','🚗'],
+ ['그림에 맞는 낱말은?','바나나','바나다','마나나','"바나나"라고 써요.','🍌'],
+ ['그림에 맞는 낱말은?','무지개','무지게','무치개','"무지개"라고 써요. "게"가 아니라 "개"예요.','🌈'],
+ ['그림에 맞는 낱말은?','딸기','달기','딸끼','"딸기"라고 써요.','🍓'],
+ ['그림에 맞는 낱말은?','물고기','물꼬기','불고기','소리는 "물꼬기"처럼 나도 "물고기"라고 써요.','🐟'],
+ ['그림에 맞는 낱말은?','거북이','거부기','거북기','소리는 "거부기"처럼 나도 "거북이"라고 써요.','🐢'],
+ ['그림에 맞는 낱말은?','해바라기','해발아기','헤바라기','"해바라기"라고 써요.','🌻'],
+ ['"크다"의 반대말은?','작다','높다','많다','크다 ↔ 작다','🐘🐭'],
+ ['"덥다"의 반대말은?','춥다','맵다','밝다','덥다 ↔ 춥다','☀️⛄'],
+ ['"길다"의 반대말은?','짧다','넓다','무겁다','길다 ↔ 짧다','📏'],
+ ['"빠르다"의 반대말은?','느리다','낮다','적다','빠르다 ↔ 느리다','🐇🐢'],
+ ['"열다"의 반대말은?','닫다','넣다','놓다','문을 열다 ↔ 문을 닫다','🚪'],
+ ['끝말잇기! "기차" 다음에 올 낱말은?','차표','기린','나무','"기차"의 끝 글자 "차"로 시작해요.','🚂'],
+ ['끝말잇기! "나비" 다음에 올 낱말은?','비행기','나무','사자','"나비"의 끝 글자 "비"로 시작해요.','🦋'],
+ ['끝말잇기! "사자" 다음에 올 낱말은?','자전거','사과','오리','"사자"의 끝 글자 "자"로 시작해요.','🦁'],
+ ['받침이 있는 글자는?','곰','고','기','"곰"에는 ㅁ 받침이 있어요.','🐻'],
+ ['받침이 있는 글자는?','달','다','도','"달"에는 ㄹ 받침이 있어요.','🌙'],
+ ['"바다"와 첫 글자가 같은 낱말은?','바지','나무','사과','바다, 바지 모두 "바"로 시작해요.','🌊'],
+ ['연필 한 (  )','자루','마리','송이','연필은 "한 자루, 두 자루" 하고 세요.','✏️'],
+ ['강아지 한 (  )','마리','자루','장','동물은 "한 마리, 두 마리" 하고 세요.','🐶'],
+ ['꽃 한 (  )','송이','마리','장','꽃은 "한 송이, 두 송이" 하고 세요.','🌷'],
+ ['종이 한 (  )','장','마리','송이','종이는 "한 장, 두 장" 하고 세요.','📄'],
+ ['"자다"를 어른께 높여서 말하면?','주무시다','드시다','말씀하다','"할머니께서 주무세요"처럼 말해요.','😴'],
+ ['"먹다"를 어른께 높여서 말하면?','드시다','주무시다','계시다','"할아버지, 진지 드세요"처럼 말해요.','🍚'],
+],
+};
+
+// ───── 산수 문제 자동 생성 ─────
+const R = (a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+const shuffle = arr => { const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
+function numChoices(ans, lo=0, hi=20){
+  const set=new Set([ans]); const near=shuffle([-2,-1,1,2,3,-3]);
+  for(const d of near){ const v=ans+d; if(v>=lo&&v<=hi) set.add(v); if(set.size===3) break; }
+  return [...set];
+}
+const CLOCKS=['🕐','🕑','🕒','🕓','🕔','🕕','🕖','🕗','🕘','🕙','🕚','🕛'];
+const THINGS=['🍎','🍊','🍓','🐟','⭐','🚗','🎈','🐥'];
+function makeMath(){
+  const kind = pick(['add','add','sub','sub','add20','count','big','seq','clock']);
+  let q,a,c,ex,pic='';
+  if(kind==='add'){ const x=R(1,8), y=R(1,9-x); a=x+y; q=`${x} + ${y} = ?`; ex=`${x}개에 ${y}개를 더하면 모두 ${a}개예요.`; c=numChoices(a,0,10); }
+  else if(kind==='sub'){ const x=R(3,10), y=R(1,x-1); a=x-y; q=`${x} − ${y} = ?`; ex=`${x}개에서 ${y}개를 빼면 ${a}개가 남아요.`; c=numChoices(a,0,10); }
+  else if(kind==='add20'){ const x=R(6,9), y=R(11-x,9); a=x+y; q=`${x} + ${y} = ?`; ex=`${x} + ${10-x} = 10, 10 + ${y-(10-x)} = ${a}. 10을 먼저 만들면 쉬워요.`; c=numChoices(a,0,20); }
+  else if(kind==='count'){ const t=pick(THINGS); a=R(3,9); pic=t.repeat(a); q='모두 몇 개일까요?'; ex=`하나씩 세어 보면 모두 ${a}개예요.`; c=numChoices(a,1,12); }
+  else if(kind==='big'){ const s=new Set(); while(s.size<3) s.add(R(1,20)); const ns=[...s]; a=Math.max(...ns); q='가장 큰 수는?'; ex=`${ns.slice().sort((p,r)=>p-r).join(' < ')}. 가장 큰 수는 ${a}!`; c=ns; }
+  else if(kind==='seq'){ const step=pick([1,2,5,10]); const st=step*R(1,3); const arr=[0,1,2,3].map(i=>st+step*i); a=arr[3]; q=`${arr.slice(0,3).join(', ')}, ?`; ex=`${step}씩 커져요. 다음은 ${a}!`; c=shuffle([...new Set([a+1,a-1,a+step])].filter(v=>v!==a)).slice(0,2).concat(a); }
+  else { const h=R(1,12); pic=CLOCKS[h-1]; q='시계는 몇 시를 가리킬까요?'; ex=`짧은 바늘이 가리키는 숫자를 읽어요. 긴 바늘이 12에 있으면 딱 ${h}시!`; c=[h, h%12+1, (h+10)%12+1]; return {t:'math', q, a:`${h}시`, c:c.map(v=>`${v}시`), ex, pic}; }
+  return {t:'math', q, a:String(a), c:c.map(String), ex, pic};
+}
+
+// ───── 기록 (이 기기에만) ─────
+const KEY='iquiz:v1';
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+const S = Object.assign({days:{}, seen:{}, wrong:[]}, load());
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const TODAY = ymd(new Date());
+
+function pickFrom(topic, n){
+  const bank = BANK[topic].map((r,i)=>({id:`${topic}:${i}`, r}));
+  const wrong = shuffle(bank.filter(b=>S.wrong.includes(b.id))).slice(0, Math.min(2,n));
+  const rest = shuffle(bank.filter(b=>!wrong.includes(b))).sort((x,y)=>(S.seen[x.id]||0)-(S.seen[y.id]||0));
+  return wrong.concat(rest).slice(0,n).map(({id,r})=>({t:topic, id, q:r[0], a:r[1], c:[r[1],r[2],r[3]], ex:r[4], pic:r[5]||''}));
+}
+function buildSet(topic){
+  const qs=[makeMath(),makeMath(),makeMath(), ...pickFrom('hangul',2)];
+  if(topic==='mix'){ const ts=shuffle(TOPICS.filter(t=>t.id!=='mix')).slice(0,5); ts.forEach(t=>qs.push(...pickFrom(t.id,1))); }
+  else qs.push(...pickFrom(topic,5));
+  return shuffle(qs).map(q=>({...q, c:shuffle(q.c)}));
+}
+const LABEL = {math:'산수', hangul:'한글'}; TOPICS.forEach(t=>LABEL[t.id]=t.name);
+
+// ───── 화면 ─────
+const app=document.getElementById('app');
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+let Q=null;
+
+function streak(){ let n=0; const d=new Date(); if(!S.days[ymd(d)]) d.setDate(d.getDate()-1); while(S.days[ymd(d)]){ n++; d.setDate(d.getDate()-1);} return n; }
+
+function home(){
+  const now=new Date(); const wd='일월화수목금토';
+  const sun=new Date(now); sun.setDate(now.getDate()-now.getDay());
+  const week=[...Array(7)].map((_,i)=>{ const d=new Date(sun); d.setDate(sun.getDate()+i); const k=ymd(d); const on=!!S.days[k];
+    return `<div class="day${on?' on':''}${k===TODAY?' today':''}"><div class="dot">${on?'참<br>잘함':''}</div><span>${wd[i]}</span></div>`; }).join('');
+  const done=S.days[TODAY]||{}; const st=streak(); const total=Object.values(BANK).reduce((s,b)=>s+b.length,0);
+  app.innerHTML=`
+    <header class="top"><h1 class="logo">아이<b>퀴즈</b></h1>
+      <div class="date">${now.getMonth()+1}월 ${now.getDate()}일 ${wd[now.getDay()]}요일</div></header>
+    <section class="board"><div class="board-head"><h2>이번 주 도장판</h2>${st?`<span class="streak">${st}일 연속!</span>`:''}</div>
+      <div class="week">${week}</div></section>
+    <h2 class="ask">오늘은 어떤 퀴즈 풀까?</h2>
+    <div class="tiles">${TOPICS.map(t=>`<button class="tile" data-t="${t.id}"><span class="ic" aria-hidden="true">${t.ic}</span>
+      <span class="nm">${t.name}<span class="sub">${t.id==='mix'?'여러 주제':t.name} 5 · 산수 3 · 한글 2</span></span>
+      ${done[t.id]!=null?`<span class="done">${done[t.id]}점</span>`:''}</button>`).join('')}</div>
+    <p class="note">7살 단계 · 문제 ${total}개 + 산수는 매번 새로 나와요 · 기록은 이 기기에만 저장돼요</p>`;
+  app.querySelectorAll('.tile').forEach(b=>b.onclick=()=>start(b.dataset.t));
+  window.scrollTo(0,0);
+}
+
+function start(topic){ Q={topic, list:buildSet(topic), i:0, res:[]}; ask(); }
+
+function ask(){
+  const q=Q.list[Q.i];
+  const many = q.t==='math' && q.pic && [...q.pic].length>3;
+  app.innerHTML=`
+    <div class="qbar"><button class="back" id="back">← 그만하기</button>
+      <div class="dots">${Q.list.map((_,k)=>`<i class="${k<Q.i?(Q.res[k]?'ok':'no'):k===Q.i?'cur':''}"></i>`).join('')}</div></div>
+    <section class="qcard"><span class="qtag">${LABEL[q.t]} · ${Q.i+1}번</span>
+      ${q.pic?`<div class="pic${many?' many':''}" aria-hidden="true">${q.pic}</div>`:''}
+      <p class="qtext">${esc(q.q)}</p></section>
+    <div class="choices">${q.c.map((c,k)=>`<button class="choice" data-k="${k}">${esc(c)}</button>`).join('')}</div>
+    <div id="fb"></div>`;
+  document.getElementById('back').onclick=home;
+  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>answer(b));
+  window.scrollTo(0,0);
+}
+
+const CIRCLE='<svg class="mark" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" vector-effect="non-scaling-stroke" d="M62 3C86 3 98 12 97 21C96 32 76 38 48 37C20 36 3 30 3 20C3 9 25 3 52 3C60 3 66 4 72 7"/></svg>';
+const SLASH='<svg class="mark" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" vector-effect="non-scaling-stroke" d="M10 36L90 5"/></svg>';
+
+function answer(btn){
+  const q=Q.list[Q.i]; const chosen=btn.textContent; const ok=chosen===q.a;
+  Q.res.push(ok);
+  app.querySelectorAll('.choice').forEach(b=>{ b.disabled=true;
+    if(b.textContent===q.a) b.insertAdjacentHTML('beforeend',CIRCLE);
+    else if(b===btn) b.insertAdjacentHTML('beforeend',SLASH);
+    else b.classList.add('dim'); });
+  if(q.id){ S.seen[q.id]=(S.seen[q.id]||0)+1;
+    S.wrong=S.wrong.filter(x=>x!==q.id); if(!ok) S.wrong.push(q.id); save(); }
+  const last=Q.i===Q.list.length-1;
+  document.getElementById('fb').innerHTML=`<div class="fb"><h3>${ok?pick(['딩동댕!','맞았어요!','정답!']):`아깝다! 정답은 "${esc(q.a)}"`}</h3><p>${esc(q.ex)}</p></div>
+    <button class="next" id="next" style="width:100%;margin-top:14px">${last?'점수 보기':'다음 문제'}</button>`;
+  const nx=document.getElementById('next'); nx.onclick=()=>{ if(last) finish(); else { Q.i++; ask(); } };
+  nx.scrollIntoView({behavior:'smooth', block:'nearest'}); nx.focus({preventScroll:true});
+}
+
+function finish(){
+  const n=Q.res.filter(Boolean).length;
+  S.days[TODAY]=S.days[TODAY]||{}; S.days[TODAY][Q.topic]=Math.max(n, S.days[TODAY][Q.topic]||0); save();
+  const miss=Q.list.filter((_,k)=>!Q.res[k]);
+  const word = n>=8?'참<br>잘했어요':n>=5?'잘했어요':'힘내요!';
+  app.innerHTML=`<section class="result">
+    <div class="stamp">${word}</div>
+    <div class="score">${n}<small> / 10</small></div>
+    ${miss.length?`<div class="review"><h3>다시 보기</h3><ul>${miss.map(q=>`<li>${esc(q.q)} <span class="ans">${esc(q.a)}</span></li>`).join('')}</ul>
+      <p class="note" style="text-align:left">틀린 문제는 다음에 또 나와요.</p></div>`:''}
+    <button class="next home" id="home">처음으로</button></section>`;
+  document.getElementById('home').onclick=home;
+  window.scrollTo(0,0);
+}
+
+home();
+</script>
+
+<script>
+/* 앱 설치 안내 + 오프라인 지원 */
+(function(){
+  const box = document.getElementById("install"), txt = document.getElementById("installText"), btn = document.getElementById("installBtn");
+  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  let dismissed = false; try { dismissed = localStorage.getItem("iquiz:installDismissed") === "1"; } catch(e) {}
+  const close = () => { box.hidden = true; try { localStorage.setItem("iquiz:installDismissed", "1"); } catch(e) {} };
+  document.getElementById("installClose").onclick = close;
+  if (!standalone && !dismissed) {
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const inApp = /KAKAOTALK|NAVER\(|Instagram|FBAN|FBAV|Line\//i.test(navigator.userAgent);
+    if (inApp) { txt.textContent = ios ? "앱처럼 쓰려면 오른쪽 아래 메뉴에서 'Safari로 열기'를 누른 뒤, 공유 버튼에서 '홈 화면에 추가'를 골라 주세요." : "앱처럼 쓰려면 메뉴에서 '다른 브라우저로 열기'를 누른 뒤 설치해 주세요."; btn.hidden = true; box.hidden = false; }
+    else if (ios) { txt.textContent = "Safari 아래쪽 공유 버튼을 누르고 '홈 화면에 추가'를 고르면 앱처럼 쓸 수 있어요."; btn.hidden = true; box.hidden = false; }
+    let deferred = null;
+    addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; box.hidden = false; });
+    btn.onclick = async () => { if (!deferred) return; deferred.prompt(); await deferred.userChoice; deferred = null; close(); };
+    addEventListener("appinstalled", close);
+  }
+  if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+})();
+</script>
+</body>
+</html>
