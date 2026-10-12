@@ -77,6 +77,38 @@ button:focus-visible{outline:3px solid var(--pencil); outline-offset:3px}
 .day.on .dot{border:2.5px double var(--red); transform:rotate(-12deg)}
 .day.today span{color:var(--ink); font-weight:700}
 
+.praise{background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:12px; width:100%; box-sizing:border-box; text-align:left}
+.praise.finished{border-color:var(--red); box-shadow:3px 3px 0 var(--red)}
+.praise h2{font-family:var(--f-display); font-weight:400; font-size:20px; margin:0}
+.tally{font-variant-numeric:tabular-nums; color:var(--muted)}
+.tally b{font-family:var(--f-display); font-weight:400; font-size:26px; color:var(--ink)}
+.meter{height:10px; background:var(--soft); border-radius:99px; overflow:hidden}
+.meter i{display:block; height:100%; background:var(--red); border-radius:99px}
+.rules{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
+.rule{border:2px dashed var(--line); border-radius:12px; padding:8px 4px; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:14px; color:var(--muted); text-align:center}
+.rule.got{border:2px solid var(--red); color:var(--ink); background:var(--soft)}
+.rule.gone{opacity:.4}
+.rule.gone span:last-child{text-decoration:line-through}
+.minis{display:flex; gap:2px; justify-content:center}
+.mini{width:22px; height:22px; box-sizing:border-box; border:2px double var(--red); border-radius:50%; display:inline-grid; place-items:center; font-family:var(--f-hand); font-size:12px; color:var(--red); transform:rotate(-12deg)}
+.minis.big .mini{width:52px; height:52px; font-size:24px; border-width:4px}
+.pmsg{margin:0; font-size:16px}
+.pmsg b{color:var(--red)}
+.day .dot em{font-style:normal; font-family:var(--f-body); color:var(--muted); font-size:11px}
+.tickets{margin-left:auto; color:var(--muted)}
+.tickets b{font-family:var(--f-display); font-weight:400; font-size:24px; color:var(--red)}
+.drawhead{display:flex; flex-direction:column; gap:4px}
+.cards{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px}
+.card{aspect-ratio:1; border-radius:10px; display:grid; place-items:center; font-family:var(--f-display); font-size:20px; line-height:1.1; text-align:center; padding:0}
+button.card{background:var(--pencil); color:#3a2c00; border:2px solid var(--ink); box-shadow:2px 2px 0 var(--ink)}
+button.card:disabled{cursor:default; opacity:.85}
+button.card:not(:disabled):active{transform:translate(2px,2px); box-shadow:none}
+.card.open{background:var(--soft); color:var(--muted); border:2px dashed var(--line); font-size:13px}
+.card.open.v1,.card.open.v2,.card.open.v3{color:var(--red)}
+.card.open.now{border:2px solid var(--red); background:var(--card); animation:stampin .35s both}
+.reveal{gap:10px}
+.stamp.lose{border-color:var(--muted); color:var(--muted)}
+.praise .next{width:100%}
 .ask{font-family:var(--f-display); font-size:24px; margin:4px 0 0}
 .tiles{display:grid; grid-template-columns:1fr 1fr; gap:12px}
 .tile{position:relative; background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px 12px; display:flex; flex-direction:column; align-items:flex-start; gap:6px; text-align:left; box-shadow:3px 3px 0 var(--ink); transition:transform .1s, box-shadow .1s}
@@ -409,7 +441,7 @@ function makeMath(){
 const KEY='iquiz:v1';
 function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
-const S = Object.assign({days:{}, seen:{}, wrong:[]}, load());
+const S = Object.assign({days:{}, seen:{}, wrong:[], tickets:0, wins:{}, board:null}, load());
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const TODAY = ymd(new Date());
 
@@ -434,23 +466,73 @@ let Q=null;
 
 function streak(){ let n=0; const d=new Date(); if(!S.days[ymd(d)]) d.setDate(d.getDate()-1); while(S.days[ymd(d)]){ n++; d.setDate(d.getDate()-1);} return n; }
 
+// 우리 집 규칙: 하루 8영역 80문제 중 맞힌 개수 → 뽑기 횟수
+const RULES=[[80,3],[75,2],[70,1]];
+const stampsFor=n=>{ for(const [min,k] of RULES) if(n>=min) return k; return 0; };
+function today(){ const d=S.days[TODAY]||{}; const ids=TOPICS.map(t=>t.id).filter(id=>d[id]!=null);
+  const sum=ids.reduce((s,id)=>s+d[id],0); return {d, n:ids.length, sum, max:sum+(TOPICS.length-ids.length)*10}; }
+const minis=k=>[...Array(k)].map(()=>'<span class="mini">뽑</span>').join('');
+
+// 뽑기판 50장: 칭찬도장 3개 1장, 2개 4장, 1개 15장, 꽝 30장 (여기 숫자만 바꾸면 돼요)
+const BOARD_MIX=[[3,1],[2,4],[1,15],[0,30]];
+const MIX_KEY=BOARD_MIX.map(x=>x.join('x')).join(',');
+function newBoard(){ const b=[]; BOARD_MIX.forEach(([v,n])=>{ for(let i=0;i<n;i++) b.push(v); }); S.board={cards:shuffle(b), open:[], mix:MIX_KEY}; save(); }
+if(!S.board || !Array.isArray(S.board.cards) || S.board.mix!==MIX_KEY) newBoard();
+
+function drawBoard(reveal){
+  if(reveal==null && S.board.open.length>=S.board.cards.length) newBoard();
+  const B=S.board, left=v=>B.cards.filter((c,i)=>c===v && !B.open.includes(i)).length;
+  const cards=B.cards.map((v,i)=>B.open.includes(i)
+    ? `<div class="card open v${v}${i===reveal?' now':''}">${v?`도장<br>${v}개`:'꽝'}</div>`
+    : `<button class="card" data-i="${i}"${S.tickets>0?'':' disabled'} aria-label="${i+1}번 뽑기">${i+1}</button>`).join('');
+  const v = reveal!=null ? B.cards[reveal] : null;
+  app.innerHTML=`
+    <div class="qbar"><button class="back" id="back">← 처음으로</button><span class="tickets">남은 뽑기 <b>${S.tickets}</b>번</span></div>
+    ${reveal!=null?`<section class="result reveal"><div class="stamp${v?'':' lose'}">${v?`칭찬도장<br>${v}개`:'꽝!'}</div>
+      <p class="pmsg">${v?`와! 칭찬도장 ${v}개 당첨!`:'아깝다! 다음 뽑기는 당첨될 거야.'}</p></section>`:''}
+    <section class="drawhead"><h2 class="ask">칭찬도장 뽑기판</h2>
+      <p class="note" style="text-align:left">${S.tickets>0?'번호를 하나 골라 눌러 봐!':(S.days[TODAY]||{})._g?'오늘 뽑기를 다 썼어요. 내일 또 만나!':'오늘 80문제를 다 풀면 뽑기를 받아요.'} 남은 장: ${BOARD_MIX.map(([v])=>`${v?`도장 ${v}개`:'꽝'} ${left(v)}`).join(' · ')}</p></section>
+    <div class="cards">${cards}</div>
+    <div class="praise"><p class="pmsg">오늘 뽑은 칭찬도장 <b>${S.wins[TODAY]||0}개</b>. 엄마 아빠한테 보여주고 받아요!</p></div>`;
+  document.getElementById('back').onclick=home;
+  app.querySelectorAll('button.card').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i; if(S.tickets<=0 || B.open.includes(i)) return;
+    S.tickets--; B.open.push(i); S.wins[TODAY]=(S.wins[TODAY]||0)+B.cards[i]; save(); drawBoard(i); });
+  window.scrollTo(0,0);
+}
+
 function home(){
   const now=new Date(); const wd='일월화수목금토';
   const sun=new Date(now); sun.setDate(now.getDate()-now.getDay());
-  const week=[...Array(7)].map((_,i)=>{ const d=new Date(sun); d.setDate(sun.getDate()+i); const k=ymd(d); const on=!!S.days[k];
-    return `<div class="day${on?' on':''}${k===TODAY?' today':''}"><div class="dot">${on?'참<br>잘함':''}</div><span>${wd[i]}</span></div>`; }).join('');
-  const done=S.days[TODAY]||{}; const st=streak(); const total=Object.values(BANK).reduce((s,b)=>s+b.length,0);
+  const week=[...Array(7)].map((_,i)=>{ const d=new Date(sun); d.setDate(sun.getDate()+i); const k=ymd(d); const r=S.days[k]||{};
+    const ids=Object.keys(r).filter(id=>TOPICS.some(t=>t.id===id)); const all=ids.length===TOPICS.length;
+    const w=S.wins[k]||0;
+    const inner= w ? `도장<br>${w}개` : all ? '다<br>풀었음' : ids.length ? `<em>${ids.length}/8</em>` : '';
+    return `<div class="day${all?' on':''}${k===TODAY?' today':''}"><div class="dot">${inner}</div><span>${wd[i]}</span></div>`; }).join('');
+  const T=today(); const st=streak(); const total=Object.values(BANK).reduce((s,b)=>s+b.length,0);
+  const got=stampsFor(T.sum);
+  const msg = T.n===TOPICS.length
+    ? (got?`다 풀었어요! <b>뽑기 ${got}번</b>을 받았어요.`:'다 풀었어요! 뽑기는 내일 다시 도전!')
+    : T.max>=70 ? `${TOPICS.length-T.n}영역 남았어요. 다 맞히면 뽑기 ${stampsFor(T.max)}번!` : `${TOPICS.length-T.n}영역 남았어요. 오늘은 도장 대신 연습하는 날!`;
   app.innerHTML=`
     <header class="top"><h1 class="logo">아이<b>퀴즈</b></h1>
       <div class="date">${now.getMonth()+1}월 ${now.getDate()}일 ${wd[now.getDay()]}요일</div></header>
-    <section class="board"><div class="board-head"><h2>이번 주 도장판</h2>${st?`<span class="streak">${st}일 연속!</span>`:''}</div>
-      <div class="week">${week}</div></section>
-    <h2 class="ask">오늘은 어떤 퀴즈 풀까?</h2>
+    <section class="praise${T.n===TOPICS.length?' finished':''}">
+      <div class="board-head"><h2>오늘의 뽑기</h2><span class="tally"><b>${T.sum}</b> / 80</span></div>
+      <div class="meter" aria-hidden="true"><i style="width:${T.sum/80*100}%"></i></div>
+      <div class="rules">${RULES.map(([min,k])=>`<div class="rule${T.sum>=min?' got':T.max<min?' gone':''}">
+        <span class="minis">${minis(k)}</span><span>${min===80?'80개 다':min+'개 이상'}<br>뽑기 ${k}번</span></div>`).join('')}</div>
+      <p class="pmsg">${msg}</p>
+      <button class="next" id="goDraw">${S.tickets>0?`뽑기판 가기 · ${S.tickets}번 남음`:'뽑기판 구경하기'}</button></section>
+    <h2 class="ask">${T.n===TOPICS.length?'더 연습해 볼까?':'오늘은 어떤 퀴즈 풀까?'}</h2>
     <div class="tiles">${TOPICS.map(t=>`<button class="tile" data-t="${t.id}"><span class="ic" aria-hidden="true">${t.ic}</span>
       <span class="nm">${t.name}<span class="sub">${t.id==='mix'?'여러 주제':t.name} 5 · 산수 3 · 한글 2</span></span>
-      ${done[t.id]!=null?`<span class="done">${done[t.id]}점</span>`:''}</button>`).join('')}</div>
-    <p class="note">7살 단계 · 문제 ${total}개 + 산수는 매번 새로 나와요 · 기록은 이 기기에만 저장돼요</p>`;
+      ${T.d[t.id]!=null?`<span class="done">${T.d[t.id]}점</span>`:''}</button>`).join('')}</div>
+    <section class="board"><div class="board-head"><h2>이번 주</h2>${st?`<span class="streak">${st}일 연속!</span>`:''}</div>
+      <div class="week">${week}</div></section>
+    <p class="note">처음 푼 점수만 뽑기에 들어가요 · 7살 단계 · 문제 ${total}개 + 산수는 매번 새로 · 기록은 이 기기에만</p>`;
   app.querySelectorAll('.tile').forEach(b=>b.onclick=()=>start(b.dataset.t));
+  document.getElementById('goDraw').onclick=()=>drawBoard();
   window.scrollTo(0,0);
 }
 
@@ -494,16 +576,26 @@ function answer(btn){
 
 function finish(){
   const n=Q.res.filter(Boolean).length;
-  S.days[TODAY]=S.days[TODAY]||{}; S.days[TODAY][Q.topic]=Math.max(n, S.days[TODAY][Q.topic]||0); save();
+  S.days[TODAY]=S.days[TODAY]||{}; const first=S.days[TODAY][Q.topic];
+  if(first==null) S.days[TODAY][Q.topic]=n;
+  const T=today(); const got=stampsFor(T.sum);
+  if(T.n===TOPICS.length && !S.days[TODAY]._g){ S.days[TODAY]._g=1; S.tickets=(S.tickets||0)+got; }
+  save();
   const miss=Q.list.filter((_,k)=>!Q.res[k]);
   const word = n>=8?'참<br>잘했어요':n>=5?'잘했어요':'힘내요!';
+  const day = first!=null ? `<p class="note">연습 판이라 오늘 점수는 처음 푼 ${first}점 그대로예요.</p>`
+    : T.n===TOPICS.length ? `<div class="praise finished"><div class="board-head"><h2>오늘 80문제 끝!</h2><span class="tally"><b>${T.sum}</b> / 80</span></div>
+        <p class="pmsg">${got?`<b>뽑기 ${got}번</b>을 받았어요!`:'뽑기는 내일 다시 도전!'}</p>${got?`<div class="minis big">${minis(got)}</div><button class="next" id="goDraw">뽑기하러 가기</button>`:''}</div>`
+    : `<p class="note">오늘 맞힌 문제 ${T.sum}개 · ${TOPICS.length-T.n}영역 남았어요</p>`;
   app.innerHTML=`<section class="result">
     <div class="stamp">${word}</div>
     <div class="score">${n}<small> / 10</small></div>
+    ${day}
     ${miss.length?`<div class="review"><h3>다시 보기</h3><ul>${miss.map(q=>`<li>${esc(q.q)} <span class="ans">${esc(q.a)}</span></li>`).join('')}</ul>
       <p class="note" style="text-align:left">틀린 문제는 다음에 또 나와요.</p></div>`:''}
     <button class="next home" id="home">처음으로</button></section>`;
   document.getElementById('home').onclick=home;
+  const g=document.getElementById('goDraw'); if(g) g.onclick=()=>drawBoard();
   window.scrollTo(0,0);
 }
 
