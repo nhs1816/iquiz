@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>아이퀴즈 부모님</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f5f8f0">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Gowun+Dodum&family=Jua&display=swap">
+<style>
+/* 부모님 화면: 아이 앱과 같은 공책 바탕, 정보는 표처럼 빽빽하게. */
+:root{
+  --paper:#f5f8f0; --grid:#dde8d6; --card:#ffffff; --ink:#1f2d27; --muted:#62736a;
+  --red:#d7342a; --line:#c9d6c2; --soft:#eef3e8; color-scheme:light;
+  --f-display:"Jua","Gowun Dodum",system-ui,sans-serif;
+  --f-body:"Gowun Dodum",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#1d362b; --grid:#264436; --card:#24402f; --ink:#eef2e8; --muted:#a6bcae;
+  --red:#ff7b6c; --line:#3a5c4a; --soft:#2a4a3a; color-scheme:dark}}
+body{margin:0; background-color:var(--paper); color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px); background-size:28px 28px}
+.wrap{max-width:560px; margin:0 auto; padding-inline:16px; padding-top:calc(20px + env(safe-area-inset-top,0px)); padding-bottom:calc(48px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:16px}
+h1{font-family:var(--f-display); font-weight:400; font-size:30px; margin:0}
+h1 b{color:var(--red); font-weight:400}
+h2{font-family:var(--f-display); font-weight:400; font-size:22px; margin:0}
+h3{font-family:var(--f-display); font-weight:400; font-size:18px; margin:0}
+.card{background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:12px}
+.row{display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap}
+.muted{color:var(--muted); font-size:14px}
+.big{font-family:var(--f-display); font-size:40px; line-height:1; font-variant-numeric:tabular-nums}
+.big small{font-size:20px; color:var(--muted)}
+.stats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
+.stat{background:var(--soft); border-radius:10px; padding:8px 10px}
+.stat b{display:block; font-family:var(--f-display); font-weight:400; font-size:24px; font-variant-numeric:tabular-nums}
+.stat.hot b{color:var(--red)}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{border:1.5px solid var(--line); border-radius:99px; padding:2px 10px; font-size:14px; font-variant-numeric:tabular-nums}
+.chip.full{border-color:var(--red); color:var(--red)}
+.chip.none{border-style:dashed; color:var(--muted)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:14px; font-variant-numeric:tabular-nums}
+th,td{padding:6px 4px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted); font-weight:400}
+ol{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:4px; font-size:14px}
+input{font:inherit; font-size:18px; color:var(--ink); background:var(--paper); border:2px solid var(--ink); border-radius:12px; padding:10px 12px; width:100%; box-sizing:border-box}
+button{font:inherit; cursor:pointer}
+.btn{background:var(--ink); color:var(--paper); border:none; border-radius:12px; padding:12px 16px; font-family:var(--f-display); font-size:18px}
+.link{background:none; border:none; color:var(--muted); text-decoration:underline; font-size:13px; padding:4px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--red); outline-offset:2px}
+.err{color:var(--red); margin:0}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const ENDPOINT = "";
+const AREAS = ['동물','곤충','경제','한국사','세계사','지리','우주','섞어서'];
+const stampsFor = n => n>=80?3:n>=75?2:n>=70?1:0;
+const app = document.getElementById('app');
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const get = k => { try { return localStorage.getItem(k)||''; } catch(e){ return ''; } };
+const put = (k,v) => { try { v ? localStorage.setItem(k,v) : localStorage.removeItem(k); } catch(e){} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const md = s => { const [,m,d]=s.split('-'); const w='일월화수목금토'[new Date(s+'T00:00').getDay()]; return `${+m}/${+d} ${w}`; };
+const TODAY = ymd(new Date());
+
+function head(){ return `<div class="row"><h1>아이<b>퀴즈</b> 부모님</h1><a class="link" href="./">아이 화면</a></div>`; }
+
+function login(msg){
+  app.innerHTML = head() + `<form class="card" id="f"><h2>가족 코드</h2>
+    <p class="muted" style="margin:0">Apps Script에 적어 둔 가족 코드를 넣으면 아이 기록을 볼 수 있어요. 이 폰에 기억해 둬요.</p>
+    <input id="code" autocomplete="off" required>${msg?`<p class="err">${esc(msg)}</p>`:''}
+    <button class="btn" type="submit">기록 보기</button></form>`;
+  document.getElementById('f').onsubmit = e => { e.preventDefault(); put('iquiz:parentCode', document.getElementById('code').value.trim()); load(); };
+}
+
+async function load(){
+  const code = get('iquiz:parentCode');
+  if(!ENDPOINT){ app.innerHTML = head() + `<div class="card"><p class="err">아직 구글 시트 주소가 연결되지 않았어요.</p></div>`; return; }
+  if(!code) return login();
+  app.innerHTML = head() + `<p class="muted">기록을 불러오는 중…</p>`;
+  let res;
+  try { res = await (await fetch(ENDPOINT, {method:'POST', body:JSON.stringify({code, t:'read'})})).json(); }
+  catch(e){ app.innerHTML = head() + `<div class="card"><p class="err">기록을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.</p><button class="btn" id="re">다시 불러오기</button></div>`; document.getElementById('re').onclick=load; return; }
+  if(!res.ok){ put('iquiz:parentCode',''); return login(res.msg==='code' ? '가족 코드가 맞지 않아요.' : '기록을 불러오지 못했어요.'); }
+  render(res.data.kids||[]);
+}
+
+function render(kids){
+  const parts = kids.length ? kids.map(kid) : [`<div class="card"><p style="margin:0">아직 기록이 없어요. 아이 폰에서 가족 코드를 넣고 한 판 풀면 여기에 나타나요.</p></div>`];
+  app.innerHTML = head() + parts.join('') + `<div class="row"><button class="link" id="re">새로 불러오기</button><button class="link" id="out">가족 코드 지우기</button></div>`;
+  document.getElementById('re').onclick = load;
+  document.getElementById('out').onclick = () => { put('iquiz:parentCode',''); login(); };
+}
+
+function dayInfo(d){
+  const sum = Object.values(d.topics).reduce((s,v)=>s+v,0);
+  const n = AREAS.filter(a=>a in d.topics).length;
+  return { sum, n, tickets: n===8 ? stampsFor(sum) : 0, won: d.draws.reduce((s,v)=>s+v,0), draws: d.draws.length };
+}
+
+function kid(k){
+  const t = k.days[TODAY] || {topics:{}, draws:[], practice:0, last:''};
+  const T = dayInfo(t);
+  const dates = Object.keys(k.days).sort().reverse().slice(0,14);
+  const week = Object.keys(k.days).filter(d => (new Date(TODAY) - new Date(d)) / 864e5 < 7).map(d=>dayInfo(k.days[d]));
+  const wk = { days: week.filter(x=>x.n).length, won: week.reduce((s,x)=>s+x.won,0), full: week.filter(x=>x.n===8).length };
+  return `<section class="card">
+    <div class="row"><h2>${esc(k.name)}</h2><span class="muted">${esc(k.age)}살 · ${esc(k.gender)}아이</span></div>
+    <div class="row"><div><span class="muted">오늘 맞힌 문제</span><div class="big">${T.sum}<small> / ${T.n*10||80}</small></div></div>
+      <span class="muted">${T.n===8?'8영역 다 풀었어요':`${T.n}/8영역`}${t.last?` · 마지막 ${esc(t.last.slice(11))}`:''}</span></div>
+    <div class="chips">${AREAS.map(a=> a in t.topics ? `<span class="chip${t.topics[a]===10?' full':''}">${a} ${t.topics[a]}</span>` : `<span class="chip none">${a}</span>`).join('')}</div>
+    <div class="stats">
+      <div class="stat${T.tickets?' hot':''}"><span class="muted">받은 뽑기</span><b>${T.tickets}번</b></div>
+      <div class="stat${T.won?' hot':''}"><span class="muted">뽑은 칭찬도장</span><b>${T.won}개</b></div>
+      <div class="stat"><span class="muted">연습 판</span><b>${t.practice}번</b></div>
+    </div>
+    <p class="muted" style="margin:0">최근 7일: ${wk.days}일 풀었고, 8영역을 다 푼 날 ${wk.full}일, 칭찬도장 ${wk.won}개</p>
+    ${dates.length?`<h3>날짜별</h3><div class="tbl"><table><thead><tr><th>날짜</th><th>영역</th><th>맞힌 문제</th><th>뽑기</th><th>칭찬도장</th></tr></thead><tbody>
+      ${dates.map(d=>{ const x=dayInfo(k.days[d]); return `<tr><td>${md(d)}</td><td>${x.n}/8</td><td>${x.sum}${x.n===8?' / 80':''}</td><td>${x.tickets?x.tickets+'번':'–'}</td><td>${x.draws?x.won+'개':'–'}</td></tr>`; }).join('')}
+      </tbody></table></div>`:''}
+    ${k.wrong.length?`<h3>자주 틀린 문제 <span class="muted">(최근 60일)</span></h3><ol>${k.wrong.map(([q,c])=>`<li>${esc(q)} <span class="muted">${c}번</span></li>`).join('')}</ol>`:''}
+  </section>`;
+}
+
+load();
+</script>
+</body>
+</html>

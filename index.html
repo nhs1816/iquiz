@@ -109,6 +109,16 @@ button.card:not(:disabled):active{transform:translate(2px,2px); box-shadow:none}
 .reveal{gap:10px}
 .stamp.lose{border-color:var(--muted); color:var(--muted)}
 .praise .next{width:100%}
+.prof{gap:8px}
+.prof label,.prof .lab{font-size:15px; color:var(--muted); margin-top:6px}
+.prof input:not([type=radio]),.prof select{font:inherit; font-size:20px; color:var(--ink); background:var(--paper); border:2px solid var(--ink); border-radius:12px; padding:10px 12px; width:100%; box-sizing:border-box}
+.seg{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.seg input{position:absolute; opacity:0; pointer-events:none}
+.seg label{margin:0; text-align:center; border:2px solid var(--line); border-radius:12px; padding:10px; font-family:var(--f-display); font-size:19px; color:var(--muted); cursor:pointer}
+.seg input:checked+label{border-color:var(--red); color:var(--red); background:var(--soft)}
+.seg input:focus-visible+label{outline:3px solid var(--pencil); outline-offset:2px}
+.prof .next{margin-top:8px}
+.linkbtn{background:none; border:none; color:var(--muted); text-decoration:underline; font-size:13px; padding:6px}
 .ask{font-family:var(--f-display); font-size:24px; margin:4px 0 0}
 .tiles{display:grid; grid-template-columns:1fr 1fr; gap:12px}
 .tile{position:relative; background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px 12px; display:flex; flex-direction:column; align-items:flex-start; gap:6px; text-align:left; box-shadow:3px 3px 0 var(--ink); transition:transform .1s, box-shadow .1s}
@@ -445,6 +455,23 @@ const S = Object.assign({days:{}, seen:{}, wrong:[], tickets:0, wins:{}, board:n
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const TODAY = ymd(new Date());
 
+// ───── 부모님 시트로 보내기 (웹앱에서만. 가족 코드를 넣은 기기만 보내요) ─────
+const ENDPOINT = "";
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'x'+Date.now().toString(16)+Math.random().toString(16).slice(2,14)).toLowerCase();
+let flushing=false;
+function send(ev){
+  if(!ENDPOINT || !S.family || !S.kid) return;
+  S.outbox=(S.outbox||[]).concat({...ev, id:uid(), at:Date.now(), date:TODAY}).slice(-300); save(); flush();
+}
+function flush(){
+  if(flushing || !ENDPOINT || !S.family || !S.kid || !(S.outbox||[]).length) return;
+  flushing=true; const batch=S.outbox.slice(0,30);
+  fetch(ENDPOINT,{method:'POST', mode:'no-cors', body:JSON.stringify({code:S.family, kid:S.kid, events:batch})})
+    .then(()=>{ const sent=new Set(batch.map(e=>e.id)); S.outbox=S.outbox.filter(e=>!sent.has(e.id)); save(); flushing=false; flush(); })
+    .catch(()=>{ flushing=false; });
+}
+addEventListener('online', flush);
+
 function pickFrom(topic, n){
   const bank = BANK[topic].map((r,i)=>({id:`${topic}:${i}`, r}));
   const wrong = shuffle(bank.filter(b=>S.wrong.includes(b.id))).slice(0, Math.min(2,n));
@@ -497,11 +524,12 @@ function drawBoard(reveal){
   document.getElementById('back').onclick=home;
   app.querySelectorAll('button.card').forEach(b=>b.onclick=()=>{
     const i=+b.dataset.i; if(S.tickets<=0 || B.open.includes(i)) return;
-    S.tickets--; B.open.push(i); S.wins[TODAY]=(S.wins[TODAY]||0)+B.cards[i]; save(); drawBoard(i); });
+    S.tickets--; B.open.push(i); S.wins[TODAY]=(S.wins[TODAY]||0)+B.cards[i]; save(); send({t:'draw', value:B.cards[i]}); drawBoard(i); });
   window.scrollTo(0,0);
 }
 
 function home(){
+  if(!S.kid) return profile();
   const now=new Date(); const wd='일월화수목금토';
   const sun=new Date(now); sun.setDate(now.getDate()-now.getDay());
   const week=[...Array(7)].map((_,i)=>{ const d=new Date(sun); d.setDate(sun.getDate()+i); const k=ymd(d); const r=S.days[k]||{};
@@ -516,7 +544,7 @@ function home(){
     : T.max>=70 ? `${TOPICS.length-T.n}영역 남았어요. 다 맞히면 뽑기 ${stampsFor(T.max)}번!` : `${TOPICS.length-T.n}영역 남았어요. 오늘은 도장 대신 연습하는 날!`;
   app.innerHTML=`
     <header class="top"><h1 class="logo">아이<b>퀴즈</b></h1>
-      <div class="date">${now.getMonth()+1}월 ${now.getDate()}일 ${wd[now.getDay()]}요일</div></header>
+      <div class="date">${esc(S.kid.name)}<br>${now.getMonth()+1}월 ${now.getDate()}일 ${wd[now.getDay()]}요일</div></header>
     <section class="praise${T.n===TOPICS.length?' finished':''}">
       <div class="board-head"><h2>오늘의 뽑기</h2><span class="tally"><b>${T.sum}</b> / 80</span></div>
       <div class="meter" aria-hidden="true"><i style="width:${T.sum/80*100}%"></i></div>
@@ -530,9 +558,40 @@ function home(){
       ${T.d[t.id]!=null?`<span class="done">${T.d[t.id]}점</span>`:''}</button>`).join('')}</div>
     <section class="board"><div class="board-head"><h2>이번 주</h2>${st?`<span class="streak">${st}일 연속!</span>`:''}</div>
       <div class="week">${week}</div></section>
-    <p class="note">처음 푼 점수만 뽑기에 들어가요 · 7살 단계 · 문제 ${total}개 + 산수는 매번 새로 · 기록은 이 기기에만</p>`;
+    <p class="note">처음 푼 점수만 뽑기에 들어가요 · 7살 단계 · 문제 ${total}개 + 산수는 매번 새로 · ${ENDPOINT&&S.family?'기록은 부모님 시트로 보내져요':'기록은 이 기기에만'}<br><button class="linkbtn" id="me">내 정보 바꾸기</button></p>`;
   app.querySelectorAll('.tile').forEach(b=>b.onclick=()=>start(b.dataset.t));
   document.getElementById('goDraw').onclick=()=>drawBoard();
+  document.getElementById('me').onclick=()=>profile();
+  window.scrollTo(0,0);
+}
+
+function profile(){
+  const k=S.kid||{}; const first=!S.kid;
+  app.innerHTML=`
+    <header class="top"><h1 class="logo">아이<b>퀴즈</b></h1></header>
+    <form class="praise prof" id="pf">
+      <h2>${first?'누가 풀어요?':'내 정보 바꾸기'}</h2>
+      <label for="pfName">이름이나 별명</label>
+      <input id="pfName" maxlength="10" required value="${esc(k.name||'')}" placeholder="예: 튼튼이" autocomplete="off">
+      <label for="pfAge">나이</label>
+      <select id="pfAge">${[5,6,7,8,9,10,11,12].map(a=>`<option value="${a}"${(k.age||7)==a?' selected':''}>${a}살</option>`).join('')}</select>
+      <span class="lab">성별</span>
+      <div class="seg"><input type="radio" name="pfG" id="pfM" value="m"${k.gender!=='f'?' checked':''}><label for="pfM">남자아이</label>
+        <input type="radio" name="pfG" id="pfF" value="f"${k.gender==='f'?' checked':''}><label for="pfF">여자아이</label></div>
+      ${ENDPOINT?`<label for="pfCode">가족 코드 <small>(부모님이 넣어 주세요)</small></label>
+      <input id="pfCode" value="${esc(S.family||'')}" autocomplete="off" placeholder="비워 두면 이 기기에만 저장">
+      <p class="note" style="text-align:left">가족 코드를 넣으면 이름·나이·성별과 푼 결과가 부모님 구글 시트로 보내져요.</p>`:''}
+      <p class="note" style="text-align:left">지금 문제는 7살 단계예요. 다른 나이 단계는 준비 중이에요.</p>
+      <button class="next" type="submit">${first?'시작하기':'저장하기'}</button>
+      ${first?'':'<button class="linkbtn" type="button" id="pfBack">돌아가기</button>'}
+    </form>`;
+  const f=document.getElementById('pf');
+  f.onsubmit=e=>{ e.preventDefault();
+    const name=document.getElementById('pfName').value.trim(); if(!name) return;
+    S.kid={id:(S.kid&&S.kid.id)||uid(), name, age:+document.getElementById('pfAge').value, gender:f.querySelector('input[name=pfG]:checked').value};
+    const c=document.getElementById('pfCode'); if(c) S.family=c.value.trim();
+    save(); send({t:'profile'}); flush(); home(); };
+  const b=document.getElementById('pfBack'); if(b) b.onclick=home;
   window.scrollTo(0,0);
 }
 
@@ -581,6 +640,8 @@ function finish(){
   const T=today(); const got=stampsFor(T.sum);
   if(T.n===TOPICS.length && !S.days[TODAY]._g){ S.days[TODAY]._g=1; S.tickets=(S.tickets||0)+got; }
   save();
+  send({t:'quiz', topic:LABEL[Q.topic], score:n, practice:first!=null,
+    note:Q.list.filter((_,k)=>!Q.res[k]).map(q=>`${q.pic&&q.t!=='math'&&[...q.pic].length<=2?q.pic+' ':''}${q.q} → ${q.a}`).join(' / ')});
   const miss=Q.list.filter((_,k)=>!Q.res[k]);
   const word = n>=8?'참<br>잘했어요':n>=5?'잘했어요':'힘내요!';
   const day = first!=null ? `<p class="note">연습 판이라 오늘 점수는 처음 푼 ${first}점 그대로예요.</p>`
@@ -599,7 +660,7 @@ function finish(){
   window.scrollTo(0,0);
 }
 
-home();
+home(); flush();
 </script>
 
 <script>
