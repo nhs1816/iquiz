@@ -104,7 +104,8 @@ button:focus-visible{outline:3px solid var(--pencil); outline-offset:3px}
 .choice{position:relative; background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px 16px; font-family:var(--f-display); font-size:24px; text-align:center; min-height:62px}
 .choice:disabled{cursor:default; color:var(--ink); opacity:1}
 .choice.dim{opacity:.45}
-.mark{position:absolute; left:-10px; top:-10px; width:calc(100% + 20px); height:calc(100% + 20px); pointer-events:none; overflow:visible}
+.lbl{position:relative; display:inline-block; padding:2px 12px}
+.mark{position:absolute; left:-8px; top:-10px; width:calc(100% + 16px); height:calc(100% + 20px); pointer-events:none; overflow:visible}
 .mark path{fill:none; stroke:var(--red); stroke-width:4; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1; animation:draw .45s ease-out forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 .fb{background:var(--soft); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:6px}
@@ -376,18 +377,32 @@ function numChoices(ans, lo=0, hi=20){
   return [...set];
 }
 const CLOCKS=['🕐','🕑','🕒','🕓','🕔','🕕','🕖','🕗','🕘','🕙','🕚','🕛'];
-const THINGS=['🍎','🍊','🍓','🐟','⭐','🚗','🎈','🐥'];
+const HALF=['🕜','🕝','🕞','🕟','🕠','🕡','🕢','🕣','🕤','🕥','🕦','🕧'];
+const STUFF=[['🍪','쿠키','쿠키가','봉지'],['🍬','사탕','사탕이','봉지'],['🍓','딸기','딸기가','접시'],['🎈','풍선','풍선이','묶음'],['🥚','달걀','달걀이','판']];
+function near(ans, deltas, lo=0){ const set=new Set([ans]); for(const d of shuffle(deltas)){ const v=ans+d; if(v>=lo) set.add(v); if(set.size===3) break; } return [...set]; }
 function makeMath(){
-  const kind = pick(['add','add','sub','sub','add20','count','big','seq','clock']);
-  let q,a,c,ex,pic='';
-  if(kind==='add'){ const x=R(1,8), y=R(1,9-x); a=x+y; q=`${x} + ${y} = ?`; ex=`${x}개에 ${y}개를 더하면 모두 ${a}개예요.`; c=numChoices(a,0,10); }
-  else if(kind==='sub'){ const x=R(3,10), y=R(1,x-1); a=x-y; q=`${x} − ${y} = ?`; ex=`${x}개에서 ${y}개를 빼면 ${a}개가 남아요.`; c=numChoices(a,0,10); }
-  else if(kind==='add20'){ const x=R(6,9), y=R(11-x,9); a=x+y; q=`${x} + ${y} = ?`; ex=`${x} + ${10-x} = 10, 10 + ${y-(10-x)} = ${a}. 10을 먼저 만들면 쉬워요.`; c=numChoices(a,0,20); }
-  else if(kind==='count'){ const t=pick(THINGS); a=R(3,9); pic=t.repeat(a); q='모두 몇 개일까요?'; ex=`하나씩 세어 보면 모두 ${a}개예요.`; c=numChoices(a,1,12); }
-  else if(kind==='big'){ const s=new Set(); while(s.size<3) s.add(R(1,20)); const ns=[...s]; a=Math.max(...ns); q='가장 큰 수는?'; ex=`${ns.slice().sort((p,r)=>p-r).join(' < ')}. 가장 큰 수는 ${a}!`; c=ns; }
-  else if(kind==='seq'){ const step=pick([1,2,5,10]); const st=step*R(1,3); const arr=[0,1,2,3].map(i=>st+step*i); a=arr[3]; q=`${arr.slice(0,3).join(', ')}, ?`; ex=`${step}씩 커져요. 다음은 ${a}!`; c=shuffle([...new Set([a+1,a-1,a+step])].filter(v=>v!==a)).slice(0,2).concat(a); }
-  else { const h=R(1,12); pic=CLOCKS[h-1]; q='시계는 몇 시를 가리킬까요?'; ex=`짧은 바늘이 가리키는 숫자를 읽어요. 긴 바늘이 12에 있으면 딱 ${h}시!`; c=[h, h%12+1, (h+10)%12+1]; return {t:'math', q, a:`${h}시`, c:c.map(v=>`${v}시`), ex, pic}; }
-  return {t:'math', q, a:String(a), c:c.map(String), ex, pic};
+  const kind = pick(['add','add','sub','sub','mul','mul','div','story','seq','clock']);
+  let q,a,c,ex,pic='',unit='';
+  if(kind==='add'){ const x=R(12,68), y=R(7,Math.min(39,99-x)); a=x+y; q=`${x} + ${y} = ?`;
+    const o=x%10+y%10; ex = o>=10 ? `일의 자리 ${x%10} + ${y%10} = ${o}. 10은 십의 자리로 올려요. 답은 ${a}.` : `일의 자리끼리, 십의 자리끼리 더하면 ${a}.`;
+    c=near(a,[10,-10,1,-1]); }
+  else if(kind==='sub'){ const x=R(31,99), y=R(6,Math.min(49,x-6)); a=x-y; q=`${x} − ${y} = ?`;
+    ex = x%10<y%10 ? `일의 자리끼리 뺄 수 없으면 십의 자리에서 10을 빌려와요. 답은 ${a}.` : `일의 자리끼리, 십의 자리끼리 빼면 ${a}.`;
+    c=near(a,[10,-10,1,-1]); }
+  else if(kind==='mul'){ const n=pick([2,3,4,5,6,7,8,9,2,3,4,5]), m=R(2,9); a=n*m; q=`${n} × ${m} = ?`;
+    ex=`${n}씩 ${m}번 더하면 ${a}. ${n}단을 외워 봐요!`; c=near(a,[n,-n,1,-1],1); }
+  else if(kind==='div'){ const n=R(2,9), m=R(2,9), t=n*m; a=m; q=`${t} ÷ ${n} = ?`;
+    ex=`${n} × ${m} = ${t} 이니까 ${t} ÷ ${n} = ${m}.`; c=near(a,[1,-1,2],1); }
+  else if(kind==='story'){ const [e,nm,nmS,box]=pick(STUFF), n=R(2,9), m=R(2,6); pic=e; unit='개';
+    if(Math.random()<.5){ a=n*m; q=`한 ${box}에 ${nmS} ${n}개씩 있어요. ${m}${box}에는 모두 몇 개일까요?`; ex=`${n} × ${m} = ${a}. 모두 ${a}개예요.`; c=near(a,[n,-n,1]); }
+    else { a=n; q=`${nm} ${n*m}개를 친구 ${m}명이 똑같이 나눠 가지면, 한 명이 몇 개씩 가질까요?`; ex=`${n*m} ÷ ${m} = ${n}. 한 명이 ${n}개씩이에요.`; c=near(a,[1,-1,2],1); } }
+  else if(kind==='seq'){ const step=pick([3,4,5,6,10,25]); const st=step*R(1,4); const arr=[0,1,2,3].map(i=>st+step*i); a=arr[3]; q=`${arr.slice(0,3).join(', ')}, ?`;
+    ex=`${step}씩 커져요. 다음은 ${a}!`; c=near(a,[1,-1,step,10]); }
+  else { const h=R(1,12), half=Math.random()<.5; pic=(half?HALF:CLOCKS)[h-1]; q='시계는 몇 시 몇 분일까요?';
+    const fmt=(hh,hf)=>hf?`${hh}시 30분`:`${hh}시`; a=fmt(h,half);
+    ex= half ? `긴 바늘이 6에 있으면 30분이에요. 짧은 바늘이 ${h}시를 막 지났으니 ${a}.` : `긴 바늘이 12에 있으면 딱 ${a}!`;
+    return {t:'math', q, a, c:[a, fmt(h,!half), fmt(h%12+1,half)], ex, pic}; }
+  return {t:'math', q, a:a+unit, c:c.map(v=>v+unit), ex, pic};
 }
 
 // ───── 기록 (이 기기에만) ─────
@@ -450,22 +465,23 @@ function ask(){
     <section class="qcard"><span class="qtag">${LABEL[q.t]} · ${Q.i+1}번</span>
       ${q.pic?`<div class="pic${many?' many':''}" aria-hidden="true">${q.pic}</div>`:''}
       <p class="qtext">${esc(q.q)}</p></section>
-    <div class="choices">${q.c.map((c,k)=>`<button class="choice" data-k="${k}">${esc(c)}</button>`).join('')}</div>
+    <div class="choices">${q.c.map((c,k)=>`<button class="choice" data-k="${k}"><span class="lbl">${esc(c)}</span></button>`).join('')}</div>
     <div id="fb"></div>`;
   document.getElementById('back').onclick=home;
   app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>answer(b));
   window.scrollTo(0,0);
 }
 
-const CIRCLE='<svg class="mark" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" vector-effect="non-scaling-stroke" d="M62 3C86 3 98 12 97 21C96 32 76 38 48 37C20 36 3 30 3 20C3 9 25 3 52 3C60 3 66 4 72 7"/></svg>';
+const CIRCLE='<svg class="mark" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" vector-effect="non-scaling-stroke" d="M62 3C86 3 98 12 97 21C96 32 76 38 48 37C20 36 3 30 3 20C3 9 25 3 52 3C58 3 62 4 67 6"/></svg>';
 const SLASH='<svg class="mark" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" vector-effect="non-scaling-stroke" d="M10 36L90 5"/></svg>';
 
 function answer(btn){
   const q=Q.list[Q.i]; const chosen=btn.textContent; const ok=chosen===q.a;
   Q.res.push(ok);
   app.querySelectorAll('.choice').forEach(b=>{ b.disabled=true;
-    if(b.textContent===q.a) b.insertAdjacentHTML('beforeend',CIRCLE);
-    else if(b===btn) b.insertAdjacentHTML('beforeend',SLASH);
+    const l=b.querySelector('.lbl');
+    if(b.textContent===q.a) l.insertAdjacentHTML('beforeend',CIRCLE);
+    else if(b===btn) l.insertAdjacentHTML('beforeend',SLASH);
     else b.classList.add('dim'); });
   if(q.id){ S.seen[q.id]=(S.seen[q.id]||0)+1;
     S.wrong=S.wrong.filter(x=>x!==q.id); if(!ok) S.wrong.push(q.id); save(); }
