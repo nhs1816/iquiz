@@ -91,7 +91,8 @@ async function load(){
   let res;
   try { res = await (await fetch(ENDPOINT, {method:'POST', body:JSON.stringify({code, t:'read'})})).json(); }
   catch(e){ app.innerHTML = head() + `<div class="card"><p class="err">기록을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.</p><button class="btn" id="re">다시 불러오기</button></div>`; document.getElementById('re').onclick=load; return; }
-  if(!res.ok){ put('iquiz:parentCode',''); return login(res.msg==='code' ? '가족 코드가 맞지 않아요.' : '기록을 불러오지 못했어요.'); }
+  if(!res.ok && res.msg==='code'){ put('iquiz:parentCode',''); return login('가족 코드가 맞지 않아요.'); }
+  if(!res.ok){ app.innerHTML = head() + `<div class="card"><p class="err">기록을 불러오지 못했어요. 잠시 뒤에 다시 눌러 주세요.</p><button class="btn" id="re">다시 불러오기</button></div>`; document.getElementById('re').onclick=load; return; }
   render(res.data.kids||[]);
 }
 
