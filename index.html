@@ -570,11 +570,13 @@ const minis=k=>k>3 ? `<span class="mini">뽑</span><span class="times">×${k}</s
 // 뽑기판 50장: 칭찬도장 3개 1장, 2개 4장, 1개 15장, 꽝 30장 (여기 숫자만 바꾸면 돼요)
 const BOARD_MIX=[[3,1],[2,4],[1,15],[0,30]];
 const MIX_KEY=BOARD_MIX.map(x=>x.join('x')).join(',');
-function newBoard(){ const b=[]; BOARD_MIX.forEach(([v,n])=>{ for(let i=0;i<n;i++) b.push(v); }); S.board={cards:shuffle(b), open:[], mix:MIX_KEY}; save(); }
-if(!S.board || !Array.isArray(S.board.cards) || S.board.mix!==MIX_KEY) newBoard();
+function newBoard(){ const b=[]; BOARD_MIX.forEach(([v,n])=>{ for(let i=0;i<n;i++) b.push(v); }); S.board={cards:shuffle(b), open:[], mix:MIX_KEY, week:WEEK}; save(); }
+// 뽑기판은 매주 새 판으로 바뀌어요
+const staleBoard=()=>!S.board || !Array.isArray(S.board.cards) || S.board.mix!==MIX_KEY || S.board.week!==WEEK;
+if(staleBoard()) newBoard();
 
 function drawBoard(reveal){
-  if(reveal==null && S.board.open.length>=S.board.cards.length) newBoard();
+  if(reveal==null && (staleBoard() || S.board.open.length>=S.board.cards.length)) newBoard();
   const B=S.board, left=v=>B.cards.filter((c,i)=>c===v && !B.open.includes(i)).length;
   const cards=B.cards.map((v,i)=>B.open.includes(i)
     ? `<div class="card open v${v}${i===reveal?' now':''}">${v?`도장<br>${v}개`:'꽝'}</div>`
@@ -585,7 +587,7 @@ function drawBoard(reveal){
     ${reveal!=null?`<section class="result reveal"><div class="stamp${v?'':' lose'}">${v?`칭찬도장<br>${v}개`:'꽝!'}</div>
       <p class="pmsg">${v?`와! 칭찬도장 ${v}개 당첨!`:'아깝다! 다음 뽑기는 당첨될 거야.'}</p></section>`:''}
     <section class="drawhead"><h2 class="ask">칭찬도장 뽑기판</h2>
-      <p class="note" style="text-align:left">${S.tickets>0?'번호를 하나 골라 눌러 봐!':(S.weeks[WEEK]||{})._g?'이번 주 뽑기를 다 썼어요. 다음 주에 또 만나!':`이번 주 ${TOTAL}문제를 다 풀면 뽑기를 받아요.`} 남은 장: ${BOARD_MIX.map(([v])=>`${v?`도장 ${v}개`:'꽝'} ${left(v)}`).join(' · ')}</p></section>
+      <p class="note" style="text-align:left">${S.tickets>0?'번호를 하나 골라 눌러 봐!':(S.weeks[WEEK]||{})._g?'이번 주 뽑기를 다 썼어요. 다음 주에 또 만나!':`이번 주 ${TOTAL}문제를 다 풀면 뽑기를 받아요.`} 이번 주 판에 남은 장: ${BOARD_MIX.map(([v])=>`${v?`도장 ${v}개`:'꽝'} ${left(v)}`).join(' · ')}</p></section>
     <div class="cards">${cards}</div>
     <div class="praise"><p class="pmsg">이번 주 뽑은 칭찬도장 <b>${S.wins[WEEK]||0}개</b>. 엄마 아빠한테 보여주고 받아요!</p></div>`;
   document.getElementById('back').onclick=home;
