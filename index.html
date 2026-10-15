@@ -119,14 +119,19 @@ button.card:not(:disabled):active{transform:translate(2px,2px); box-shadow:none}
 .seg input:focus-visible+label{outline:3px solid var(--pencil); outline-offset:2px}
 .prof .next{margin-top:8px}
 .linkbtn{background:none; border:none; color:var(--muted); text-decoration:underline; font-size:13px; padding:6px}
+.hist{list-style:none; margin:0; padding:0; display:flex; flex-direction:column}
+.hist li{display:grid; grid-template-columns:1fr auto auto; gap:12px; padding:6px 0; border-bottom:1px solid var(--line); font-size:14px; font-variant-numeric:tabular-nums}
+.hist li:last-child{border-bottom:none}
+.hist .hw{color:var(--red); min-width:56px; text-align:right}
+.muted{color:var(--muted); font-size:14px}
 .ask{font-family:var(--f-display); font-size:24px; margin:4px 0 0}
-.tiles{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-.tile{position:relative; background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:14px 12px; display:flex; flex-direction:column; align-items:flex-start; gap:6px; text-align:left; box-shadow:3px 3px 0 var(--ink); transition:transform .1s, box-shadow .1s}
+.tiles{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+.tile{position:relative; background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:12px 10px; display:flex; flex-direction:column; align-items:flex-start; gap:6px; text-align:left; box-shadow:3px 3px 0 var(--ink); transition:transform .1s, box-shadow .1s}
 .tile:active{transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink)}
 .tile .ic{font-size:32px; line-height:1}
 .tile .nm{font-family:var(--f-display); font-size:21px; line-height:1.1}
 .tile .sub{display:block; font-family:var(--f-body); font-size:13px; color:var(--muted)}
-.tile .done{position:absolute; right:8px; top:6px; font-family:var(--f-hand); color:var(--red); font-size:17px; border:2px solid var(--red); border-radius:50%; width:40px; height:40px; display:grid; place-items:center; transform:rotate(-10deg); background:var(--card)}
+.tile .done{position:absolute; right:6px; top:6px; font-family:var(--f-hand); color:var(--red); font-size:15px; border:2px solid var(--red); border-radius:50%; width:36px; height:36px; display:grid; place-items:center; transform:rotate(-10deg); background:var(--card)}
 .note{font-size:13px; color:var(--muted); text-align:center; margin:0}
 
 /* 퀴즈 */
@@ -179,14 +184,15 @@ button.card:not(:disabled):active{transform:translate(2px,2px); box-shadow:none}
 // ───── 문제은행 (7살 · 글 읽기 시작한 아이) ─────
 // [질문, 정답, 오답1, 오답2, 설명, 그림]
 const TOPICS = [
+  {id:'math', name:'산수', ic:'➗'},
+  {id:'hangul', name:'국어', ic:'✏️'},
   {id:'animal', name:'동물', ic:'🦁'},
   {id:'bug', name:'곤충', ic:'🐞'},
+  {id:'space', name:'우주', ic:'🪐'},
+  {id:'geo', name:'지리', ic:'🗺️'},
   {id:'money', name:'경제', ic:'🪙'},
   {id:'korea', name:'한국사', ic:'👑'},
   {id:'world', name:'세계사', ic:'🗿'},
-  {id:'geo', name:'지리', ic:'🗺️'},
-  {id:'space', name:'우주', ic:'🪐'},
-  {id:'mix', name:'섞어서', ic:'🎲'},
 ];
 const BANK = {
 animal:[
@@ -417,6 +423,12 @@ hangul:[
  ['종이 한 (  )','장','마리','송이','종이는 "한 장, 두 장" 하고 세요.','📄'],
  ['"자다"를 어른께 높여서 말하면?','주무시다','드시다','말씀하다','"할머니께서 주무세요"처럼 말해요.','😴'],
  ['"먹다"를 어른께 높여서 말하면?','드시다','주무시다','계시다','"할아버지, 진지 드세요"처럼 말해요.','🍚'],
+ ['개구리가 (    ) 뛰어요.','폴짝','주룩주룩','반짝반짝','"폴짝"처럼 움직임을 흉내 내는 말을 쓰면 글이 생생해져요.','🐸'],
+ ['비가 (    ) 내려요.','주룩주룩','폴짝','꼬끼오','비가 많이 내리는 모양을 "주룩주룩"이라고 해요.','🌧️'],
+ ['밤하늘에 별이 (    ) 빛나요.','반짝반짝','주룩주룩','멍멍','빛이 났다 말았다 하는 모양을 "반짝반짝"이라고 해요.','⭐'],
+ ['닭이 우는 소리를 흉내 내는 말은?','꼬끼오','음매','야옹','소는 음매, 고양이는 야옹, 닭은 꼬끼오!','🐓'],
+ ['속담: "(    )도 맞들면 낫다"','백지장','돌멩이','수박','얇은 종이 한 장도 같이 들면 쉽다는 뜻이에요. 함께 하면 쉬워져요.','🤝'],
+ ['속담: "낮말은 (    )가 듣고 밤말은 쥐가 듣는다"','새','개','소','아무도 안 듣는 것 같아도 누군가 들을 수 있으니 말을 조심하라는 뜻이에요.','🐦'],
 ],
 };
 
@@ -462,9 +474,12 @@ function makeMath(){
 const KEY='iquiz:v1';
 function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
-const S = Object.assign({days:{}, seen:{}, wrong:[], tickets:0, wins:{}, board:null}, load());
+const S = Object.assign({weeks:{}, seen:{}, wrong:[], tickets:0, wins:{}, board:null}, load());
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const TODAY = ymd(new Date());
+// 한 주 = 월요일부터 일요일까지
+const monday = d => { const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; };
+const WEEK = ymd(monday(new Date()));
 
 // ───── 부모님 시트로 보내기 (웹앱에서만. 가족 코드를 넣은 기기만 보내요) ─────
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbx1AfjqkgLj3_7VZF5862JlqcujiG3gLrZtRjlj2Nx4x_OwV8KZ5sjqSwy0kxjFoZLz/exec";
@@ -490,25 +505,26 @@ function pickFrom(topic, n){
   return wrong.concat(rest).slice(0,n).map(({id,r})=>({t:topic, id, q:r[0], a:r[1], c:[r[1],r[2],r[3]], ex:r[4], pic:r[5]||''}));
 }
 function buildSet(topic){
-  const qs=[makeMath(),makeMath(),makeMath(), ...pickFrom('hangul',2)];
-  if(topic==='mix'){ const ts=shuffle(TOPICS.filter(t=>t.id!=='mix')).slice(0,5); ts.forEach(t=>qs.push(...pickFrom(t.id,1))); }
-  else qs.push(...pickFrom(topic,5));
+  let qs;
+  if(topic==='math'){ const seen=new Set(); qs=[]; while(qs.length<10){ const m=makeMath(); if(!seen.has(m.q+m.pic)){ seen.add(m.q+m.pic); qs.push(m); } } }
+  else qs=pickFrom(topic,10);
   return shuffle(qs).map(q=>({...q, c:shuffle(q.c)}));
 }
-const LABEL = {math:'산수', hangul:'한글'}; TOPICS.forEach(t=>LABEL[t.id]=t.name);
+const LABEL = {}; TOPICS.forEach(t=>LABEL[t.id]=t.name);
 
 // ───── 화면 ─────
 const app=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 let Q=null;
 
-function streak(){ let n=0; const d=new Date(); if(!S.days[ymd(d)]) d.setDate(d.getDate()-1); while(S.days[ymd(d)]){ n++; d.setDate(d.getDate()-1);} return n; }
-
-// 우리 집 규칙: 하루 8영역 80문제 중 맞힌 개수 → 뽑기 횟수
-const RULES=[[80,3],[75,2],[70,1]];
+// 우리 집 규칙: 한 주 9영역 90문제 중 맞힌 개수 → 뽑기 횟수
+const TOTAL=TOPICS.length*10;
+const RULES=[[90,3],[85,2],[80,1]];
 const stampsFor=n=>{ for(const [min,k] of RULES) if(n>=min) return k; return 0; };
-function today(){ const d=S.days[TODAY]||{}; const ids=TOPICS.map(t=>t.id).filter(id=>d[id]!=null);
+function weekOf(key){ const d=S.weeks[key]||{}; const ids=TOPICS.map(t=>t.id).filter(id=>d[id]!=null);
   const sum=ids.reduce((s,id)=>s+d[id],0); return {d, n:ids.length, sum, max:sum+(TOPICS.length-ids.length)*10}; }
+const thisWeek=()=>weekOf(WEEK);
+const mdLabel = key => { const d=new Date(key+'T00:00'); return `${d.getMonth()+1}월 ${d.getDate()}일`; };
 const minis=k=>[...Array(k)].map(()=>'<span class="mini">뽑</span>').join('');
 
 // 뽑기판 50장: 칭찬도장 3개 1장, 2개 4장, 1개 15장, 꽝 30장 (여기 숫자만 바꾸면 돼요)
@@ -529,47 +545,44 @@ function drawBoard(reveal){
     ${reveal!=null?`<section class="result reveal"><div class="stamp${v?'':' lose'}">${v?`칭찬도장<br>${v}개`:'꽝!'}</div>
       <p class="pmsg">${v?`와! 칭찬도장 ${v}개 당첨!`:'아깝다! 다음 뽑기는 당첨될 거야.'}</p></section>`:''}
     <section class="drawhead"><h2 class="ask">칭찬도장 뽑기판</h2>
-      <p class="note" style="text-align:left">${S.tickets>0?'번호를 하나 골라 눌러 봐!':(S.days[TODAY]||{})._g?'오늘 뽑기를 다 썼어요. 내일 또 만나!':'오늘 80문제를 다 풀면 뽑기를 받아요.'} 남은 장: ${BOARD_MIX.map(([v])=>`${v?`도장 ${v}개`:'꽝'} ${left(v)}`).join(' · ')}</p></section>
+      <p class="note" style="text-align:left">${S.tickets>0?'번호를 하나 골라 눌러 봐!':(S.weeks[WEEK]||{})._g?'이번 주 뽑기를 다 썼어요. 다음 주에 또 만나!':`이번 주 ${TOTAL}문제를 다 풀면 뽑기를 받아요.`} 남은 장: ${BOARD_MIX.map(([v])=>`${v?`도장 ${v}개`:'꽝'} ${left(v)}`).join(' · ')}</p></section>
     <div class="cards">${cards}</div>
-    <div class="praise"><p class="pmsg">오늘 뽑은 칭찬도장 <b>${S.wins[TODAY]||0}개</b>. 엄마 아빠한테 보여주고 받아요!</p></div>`;
+    <div class="praise"><p class="pmsg">이번 주 뽑은 칭찬도장 <b>${S.wins[WEEK]||0}개</b>. 엄마 아빠한테 보여주고 받아요!</p></div>`;
   document.getElementById('back').onclick=home;
   app.querySelectorAll('button.card').forEach(b=>b.onclick=()=>{
     const i=+b.dataset.i; if(S.tickets<=0 || B.open.includes(i)) return;
-    S.tickets--; B.open.push(i); S.wins[TODAY]=(S.wins[TODAY]||0)+B.cards[i]; save(); send({t:'draw', value:B.cards[i]}); drawBoard(i); });
+    S.tickets--; B.open.push(i); S.wins[WEEK]=(S.wins[WEEK]||0)+B.cards[i]; save(); send({t:'draw', value:B.cards[i]}); drawBoard(i); });
   window.scrollTo(0,0);
 }
 
 function home(){
   if(!S.kid) return profile();
-  const now=new Date(); const wd='일월화수목금토';
-  const sun=new Date(now); sun.setDate(now.getDate()-now.getDay());
-  const week=[...Array(7)].map((_,i)=>{ const d=new Date(sun); d.setDate(sun.getDate()+i); const k=ymd(d); const r=S.days[k]||{};
-    const ids=Object.keys(r).filter(id=>TOPICS.some(t=>t.id===id)); const all=ids.length===TOPICS.length;
-    const w=S.wins[k]||0;
-    const inner= w ? `도장<br>${w}개` : all ? '다<br>풀었음' : ids.length ? `<em>${ids.length}/8</em>` : '';
-    return `<div class="day${all?' on':''}${k===TODAY?' today':''}"><div class="dot">${inner}</div><span>${wd[i]}</span></div>`; }).join('');
-  const T=today(); const st=streak(); const total=Object.values(BANK).reduce((s,b)=>s+b.length,0);
-  const got=stampsFor(T.sum);
-  const msg = T.n===TOPICS.length
-    ? (got?`다 풀었어요! <b>뽑기 ${got}번</b>을 받았어요.`:'다 풀었어요! 뽑기는 내일 다시 도전!')
-    : T.max>=70 ? `${TOPICS.length-T.n}영역 남았어요. 다 맞히면 뽑기 ${stampsFor(T.max)}번!` : `${TOPICS.length-T.n}영역 남았어요. 오늘은 도장 대신 연습하는 날!`;
+  const now=new Date(); const sun=new Date(monday(now)); sun.setDate(sun.getDate()+6);
+  const daysLeft=Math.round((sun-new Date(TODAY+'T00:00'))/864e5)+1;
+  const T=thisWeek(); const got=stampsFor(T.sum); const all=T.n===TOPICS.length;
+  const total=Object.values(BANK).reduce((s,b)=>s+b.length,0);
+  const msg = all
+    ? (got?`다 풀었어요! <b>뽑기 ${got}번</b>을 받았어요.`:'다 풀었어요! 뽑기는 다음 주에 다시 도전!')
+    : T.max>=RULES[RULES.length-1][0] ? `${TOPICS.length-T.n}영역 남았어요. 다 맞히면 뽑기 ${stampsFor(T.max)}번!` : `${TOPICS.length-T.n}영역 남았어요. 이번 주는 연습하는 주!`;
+  const past=Object.keys(S.weeks).filter(k=>k<WEEK).sort().reverse().slice(0,4);
   app.innerHTML=`
     <header class="top"><h1 class="logo">아이<b>퀴즈</b></h1>
-      <div class="date">${esc(S.kid.name)}<br>${now.getMonth()+1}월 ${now.getDate()}일 ${wd[now.getDay()]}요일</div></header>
-    <section class="praise${T.n===TOPICS.length?' finished':''}">
-      <div class="board-head"><h2>오늘의 뽑기</h2><span class="tally"><b>${T.sum}</b> / 80</span></div>
-      <div class="meter" aria-hidden="true"><i style="width:${T.sum/80*100}%"></i></div>
+      <div class="date">${esc(S.kid.name)}<br>${mdLabel(WEEK)} ~ ${sun.getMonth()+1}월 ${sun.getDate()}일</div></header>
+    <section class="praise${all?' finished':''}">
+      <div class="board-head"><h2>이번 주 퀴즈</h2><span class="tally"><b>${T.sum}</b> / ${TOTAL}</span></div>
+      <div class="meter" aria-hidden="true"><i style="width:${T.sum/TOTAL*100}%"></i></div>
       <div class="rules">${RULES.map(([min,k])=>`<div class="rule${T.sum>=min?' got':T.max<min?' gone':''}">
-        <span class="minis">${minis(k)}</span><span>${min===80?'80개 다':min+'개 이상'}<br>뽑기 ${k}번</span></div>`).join('')}</div>
-      <p class="pmsg">${msg}</p>
+        <span class="minis">${minis(k)}</span><span>${min===TOTAL?`${TOTAL}개 다`:min+'개 이상'}<br>뽑기 ${k}번</span></div>`).join('')}</div>
+      <p class="pmsg">${msg}${all?'':` <span class="muted">일요일까지 ${daysLeft}일 남았어요.</span>`}</p>
       <button class="next" id="goDraw">${S.tickets>0?`뽑기판 가기 · ${S.tickets}번 남음`:'뽑기판 구경하기'}</button></section>
-    <h2 class="ask">${T.n===TOPICS.length?'더 연습해 볼까?':'오늘은 어떤 퀴즈 풀까?'}</h2>
+    <h2 class="ask">${all?'더 연습해 볼까?':'어떤 퀴즈 풀까?'}</h2>
     <div class="tiles">${TOPICS.map(t=>`<button class="tile" data-t="${t.id}"><span class="ic" aria-hidden="true">${t.ic}</span>
-      <span class="nm">${t.name}<span class="sub">${t.id==='mix'?'여러 주제':t.name} 5 · 산수 3 · 한글 2</span></span>
+      <span class="nm">${t.name}<span class="sub">10문제</span></span>
       ${T.d[t.id]!=null?`<span class="done">${T.d[t.id]}점</span>`:''}</button>`).join('')}</div>
-    <section class="board"><div class="board-head"><h2>이번 주</h2>${st?`<span class="streak">${st}일 연속!</span>`:''}</div>
-      <div class="week">${week}</div></section>
-    <p class="note">처음 푼 점수만 뽑기에 들어가요 · 7살 단계 · 문제 ${total}개 + 산수는 매번 새로 · ${ENDPOINT&&S.family?'기록은 부모님 시트로 보내져요':'기록은 이 기기에만'}<br><button class="linkbtn" id="me">내 정보 바꾸기</button></p>`;
+    ${past.length?`<section class="board"><div class="board-head"><h2>지난 주들</h2></div>
+      <ul class="hist">${past.map(k=>{ const W=weekOf(k); const w=S.wins[k]||0;
+        return `<li><span>${mdLabel(k)} 주</span><span>${W.n}/${TOPICS.length}영역 · ${W.sum}개</span><span class="hw">${w?`도장 ${w}개`:'–'}</span></li>`; }).join('')}</ul></section>`:''}
+    <p class="note">한 주 동안 나눠서 풀어도 돼요 · 처음 푼 점수만 뽑기에 들어가요 · 7살 단계 · 문제 ${total}개 + 산수는 매번 새로 · ${ENDPOINT&&S.family?'기록은 부모님 시트로 보내져요':'기록은 이 기기에만'}<br><button class="linkbtn" id="me">내 정보 바꾸기</button></p>`;
   app.querySelectorAll('.tile').forEach(b=>b.onclick=()=>start(b.dataset.t));
   document.getElementById('goDraw').onclick=()=>drawBoard();
   document.getElementById('me').onclick=()=>profile();
@@ -612,7 +625,7 @@ function profile(){
   if(w){ const ask=document.getElementById('wipeAsk');
     w.onclick=()=>{ ask.hidden=false; w.hidden=true; };
     document.getElementById('wipeNo').onclick=()=>{ ask.hidden=true; w.hidden=false; };
-    document.getElementById('wipeYes').onclick=()=>{ Object.assign(S,{days:{}, seen:{}, wrong:[], tickets:0, wins:{}, outbox:[]}); newBoard(); save(); home(); }; }
+    document.getElementById('wipeYes').onclick=()=>{ Object.assign(S,{weeks:{}, seen:{}, wrong:[], tickets:0, wins:{}, outbox:[]}); newBoard(); save(); home(); }; }
   window.scrollTo(0,0);
 }
 
@@ -656,19 +669,19 @@ function answer(btn){
 
 function finish(){
   const n=Q.res.filter(Boolean).length;
-  S.days[TODAY]=S.days[TODAY]||{}; const first=S.days[TODAY][Q.topic];
-  if(first==null) S.days[TODAY][Q.topic]=n;
-  const T=today(); const got=stampsFor(T.sum);
-  if(T.n===TOPICS.length && !S.days[TODAY]._g){ S.days[TODAY]._g=1; S.tickets=(S.tickets||0)+got; }
+  S.weeks[WEEK]=S.weeks[WEEK]||{}; const first=S.weeks[WEEK][Q.topic];
+  if(first==null) S.weeks[WEEK][Q.topic]=n;
+  const T=thisWeek(); const got=stampsFor(T.sum);
+  if(T.n===TOPICS.length && !S.weeks[WEEK]._g){ S.weeks[WEEK]._g=1; S.tickets=(S.tickets||0)+got; }
   save();
   send({t:'quiz', topic:LABEL[Q.topic], score:n, practice:first!=null,
     note:Q.list.filter((_,k)=>!Q.res[k]).map(q=>`${q.pic&&q.t!=='math'&&[...q.pic].length<=2?q.pic+' ':''}${q.q} → ${q.a}`).join(' / ')});
   const miss=Q.list.filter((_,k)=>!Q.res[k]);
   const word = n>=8?'참<br>잘했어요':n>=5?'잘했어요':'힘내요!';
-  const day = first!=null ? `<p class="note">연습 판이라 오늘 점수는 처음 푼 ${first}점 그대로예요.</p>`
-    : T.n===TOPICS.length ? `<div class="praise finished"><div class="board-head"><h2>오늘 80문제 끝!</h2><span class="tally"><b>${T.sum}</b> / 80</span></div>
-        <p class="pmsg">${got?`<b>뽑기 ${got}번</b>을 받았어요!`:'뽑기는 내일 다시 도전!'}</p>${got?`<div class="minis big">${minis(got)}</div><button class="next" id="goDraw">뽑기하러 가기</button>`:''}</div>`
-    : `<p class="note">오늘 맞힌 문제 ${T.sum}개 · ${TOPICS.length-T.n}영역 남았어요</p>`;
+  const day = first!=null ? `<p class="note">연습 판이라 이번 주 점수는 처음 푼 ${first}점 그대로예요.</p>`
+    : T.n===TOPICS.length ? `<div class="praise finished"><div class="board-head"><h2>이번 주 ${TOTAL}문제 끝!</h2><span class="tally"><b>${T.sum}</b> / ${TOTAL}</span></div>
+        <p class="pmsg">${got?`<b>뽑기 ${got}번</b>을 받았어요!`:'뽑기는 다음 주에 다시 도전!'}</p>${got?`<div class="minis big">${minis(got)}</div><button class="next" id="goDraw">뽑기하러 가기</button>`:''}</div>`
+    : `<p class="note">이번 주 맞힌 문제 ${T.sum}개 · ${TOPICS.length-T.n}영역 남았어요</p>`;
   app.innerHTML=`<section class="result">
     <div class="stamp">${word}</div>
     <div class="score">${n}<small> / 10</small></div>

@@ -58,8 +58,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--red); outline-o
 <div class="wrap" id="app"></div>
 <script>
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbx1AfjqkgLj3_7VZF5862JlqcujiG3gLrZtRjlj2Nx4x_OwV8KZ5sjqSwy0kxjFoZLz/exec";
-const AREAS = ['동물','곤충','경제','한국사','세계사','지리','우주','섞어서'];
-const stampsFor = n => n>=80?3:n>=75?2:n>=70?1:0;
+const AREAS = ['산수','국어','동물','곤충','우주','지리','경제','한국사','세계사'];
+const TOTAL = AREAS.length*10;
+const stampsFor = n => n>=90?3:n>=85?2:n>=80?1:0;
 const app = document.getElementById('app');
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const get = k => { try { return localStorage.getItem(k)||''; } catch(e){ return ''; } };
@@ -67,6 +68,10 @@ const put = (k,v) => { try { v ? localStorage.setItem(k,v) : localStorage.remove
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const md = s => { const [,m,d]=s.split('-'); const w='일월화수목금토'[new Date(s+'T00:00').getDay()]; return `${+m}/${+d} ${w}`; };
 const TODAY = ymd(new Date());
+// 한 주 = 월요일부터 일요일까지
+const weekKey = s => { const x=new Date(s+'T00:00'); x.setDate(x.getDate()-((x.getDay()+6)%7)); return ymd(x); };
+const WEEK = weekKey(TODAY);
+const mdw = k => { const a=new Date(k+'T00:00'), b=new Date(a); b.setDate(a.getDate()+6); return `${a.getMonth()+1}/${a.getDate()}~${b.getMonth()+1}/${b.getDate()}`; };
 
 function head(){ return `<div class="row"><h1>아이<b>퀴즈</b> 부모님</h1><a class="link" href="./">아이 화면</a></div>`; }
 
@@ -97,31 +102,36 @@ function render(kids){
   document.getElementById('out').onclick = () => { put('iquiz:parentCode',''); login(); };
 }
 
-function dayInfo(d){
-  const sum = Object.values(d.topics).reduce((s,v)=>s+v,0);
-  const n = AREAS.filter(a=>a in d.topics).length;
-  return { sum, n, tickets: n===8 ? stampsFor(sum) : 0, won: d.draws.reduce((s,v)=>s+v,0), draws: d.draws.length };
+// 날짜별 기록을 주별로 묶어요. 영역마다 그 주에 처음 푼 점수만 셉니다.
+function weeks(k){
+  const W={};
+  Object.keys(k.days).sort().forEach(d=>{ const day=k.days[d], w=W[weekKey(d)]=W[weekKey(d)]||{topics:{}, draws:[], practice:0, days:new Set(), last:''};
+    for(const [t,v] of Object.entries(day.topics)) if(!(t in w.topics)) w.topics[t]=v;
+    w.draws.push(...day.draws); w.practice+=day.practice; w.days.add(d); if(day.last) w.last=day.last; });
+  return W;
+}
+function info(w){
+  const n=AREAS.filter(a=>a in w.topics).length, sum=AREAS.reduce((s,a)=>s+(w.topics[a]||0),0);
+  return { n, sum, tickets: n===AREAS.length ? stampsFor(sum) : 0, won: w.draws.reduce((s,v)=>s+v,0), draws: w.draws.length };
 }
 
 function kid(k){
-  const t = k.days[TODAY] || {topics:{}, draws:[], practice:0, last:''};
-  const T = dayInfo(t);
-  const dates = Object.keys(k.days).sort().reverse().slice(0,14);
-  const week = Object.keys(k.days).filter(d => (new Date(TODAY) - new Date(d)) / 864e5 < 7).map(d=>dayInfo(k.days[d]));
-  const wk = { days: week.filter(x=>x.n).length, won: week.reduce((s,x)=>s+x.won,0), full: week.filter(x=>x.n===8).length };
+  const W=weeks(k);
+  const t=W[WEEK]||{topics:{}, draws:[], practice:0, days:new Set(), last:''};
+  const T=info(t);
+  const keys=Object.keys(W).sort().reverse().slice(0,8);
   return `<section class="card">
     <div class="row"><h2>${esc(k.name)}</h2><span class="muted">${esc(k.age)}살 · ${esc(k.gender)}아이</span></div>
-    <div class="row"><div><span class="muted">오늘 맞힌 문제</span><div class="big">${T.sum}<small> / ${T.n*10||80}</small></div></div>
-      <span class="muted">${T.n===8?'8영역 다 풀었어요':`${T.n}/8영역`}${t.last?` · 마지막 ${esc(t.last.slice(11))}`:''}</span></div>
+    <div class="row"><div><span class="muted">이번 주 (${mdw(WEEK)}) 맞힌 문제</span><div class="big">${T.sum}<small> / ${TOTAL}</small></div></div>
+      <span class="muted">${T.n===AREAS.length?'9영역 다 풀었어요':`${T.n}/${AREAS.length}영역`}${t.days.size?` · ${t.days.size}일 접속`:''}${t.last?` · 마지막 ${esc(t.last.slice(5,16).replace('-','/'))}`:''}</span></div>
     <div class="chips">${AREAS.map(a=> a in t.topics ? `<span class="chip${t.topics[a]===10?' full':''}">${a} ${t.topics[a]}</span>` : `<span class="chip none">${a}</span>`).join('')}</div>
     <div class="stats">
       <div class="stat${T.tickets?' hot':''}"><span class="muted">받은 뽑기</span><b>${T.tickets}번</b></div>
       <div class="stat${T.won?' hot':''}"><span class="muted">뽑은 칭찬도장</span><b>${T.won}개</b></div>
       <div class="stat"><span class="muted">연습 판</span><b>${t.practice}번</b></div>
     </div>
-    <p class="muted" style="margin:0">최근 7일: ${wk.days}일 풀었고, 8영역을 다 푼 날 ${wk.full}일, 칭찬도장 ${wk.won}개</p>
-    ${dates.length?`<h3>날짜별</h3><div class="tbl"><table><thead><tr><th>날짜</th><th>영역</th><th>맞힌 문제</th><th>뽑기</th><th>칭찬도장</th></tr></thead><tbody>
-      ${dates.map(d=>{ const x=dayInfo(k.days[d]); return `<tr><td>${md(d)}</td><td>${x.n}/8</td><td>${x.sum}${x.n===8?' / 80':''}</td><td>${x.tickets?x.tickets+'번':'–'}</td><td>${x.draws?x.won+'개':'–'}</td></tr>`; }).join('')}
+    ${keys.length?`<h3>주별</h3><div class="tbl"><table><thead><tr><th>주</th><th>영역</th><th>맞힌 문제</th><th>뽑기</th><th>칭찬도장</th></tr></thead><tbody>
+      ${keys.map(w=>{ const x=info(W[w]); return `<tr><td>${mdw(w)}</td><td>${x.n}/${AREAS.length}</td><td>${x.sum}${x.n===AREAS.length?' / '+TOTAL:''}</td><td>${x.tickets?x.tickets+'번':'–'}</td><td>${x.draws?x.won+'개':'–'}</td></tr>`; }).join('')}
       </tbody></table></div>`:''}
     ${k.wrong.length?`<h3>자주 틀린 문제 <span class="muted">(최근 60일)</span></h3><ol>${k.wrong.map(([q,c])=>`<li>${esc(q)} <span class="muted">${c}번</span></li>`).join('')}</ol>`:''}
   </section>`;
