@@ -91,6 +91,8 @@ button:focus-visible{outline:3px solid var(--pencil); outline-offset:3px}
 .rule.gone span:last-child{text-decoration:line-through}
 .minis{display:flex; gap:2px; justify-content:center}
 .mini{width:22px; height:22px; box-sizing:border-box; border:2px double var(--red); border-radius:50%; display:inline-grid; place-items:center; font-family:var(--f-hand); font-size:12px; color:var(--red); transform:rotate(-12deg)}
+.times{font-family:var(--f-hand); color:var(--red); font-size:18px; line-height:22px}
+.minis.big .times{font-size:40px; line-height:52px; margin-left:4px}
 .minis.big .mini{width:52px; height:52px; font-size:24px; border-width:4px}
 .pmsg{margin:0; font-size:16px}
 .pmsg b{color:var(--red)}
@@ -555,15 +557,15 @@ const app=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 let Q=null;
 
-// 우리 집 규칙: 한 주 동안 푼 문제(영역 수 × 10) 중 맞힌 개수 → 뽑기 횟수. 다 맞히면 3번, 5개 틀리면 2번, 10개 틀리면 1번
+// 우리 집 규칙: 한 주 100문제 중 맞힌 개수 → 뽑기 횟수. 100개 다 15번, 90개 이상 10번, 80개 이상 5번
 const TOTAL=TOPICS.length*10;
-const RULES=[[TOTAL,3],[TOTAL-5,2],[TOTAL-10,1]];
+const RULES=[[TOTAL,15],[TOTAL-10,10],[TOTAL-20,5]];
 const stampsFor=n=>{ for(const [min,k] of RULES) if(n>=min) return k; return 0; };
 function weekOf(key){ const d=S.weeks[key]||{}; const ids=TOPICS.map(t=>t.id).filter(id=>d[id]!=null);
   const sum=ids.reduce((s,id)=>s+d[id],0); return {d, n:ids.length, sum, max:sum+(TOPICS.length-ids.length)*10}; }
 const thisWeek=()=>weekOf(WEEK);
 const mdLabel = key => { const d=new Date(key+'T00:00'); return `${d.getMonth()+1}월 ${d.getDate()}일`; };
-const minis=k=>[...Array(k)].map(()=>'<span class="mini">뽑</span>').join('');
+const minis=k=>k>3 ? `<span class="mini">뽑</span><span class="times">×${k}</span>` : [...Array(k)].map(()=>'<span class="mini">뽑</span>').join('');
 
 // 뽑기판 50장: 칭찬도장 3개 1장, 2개 4장, 1개 15장, 꽝 30장 (여기 숫자만 바꾸면 돼요)
 const BOARD_MIX=[[3,1],[2,4],[1,15],[0,30]];
