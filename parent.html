@@ -60,7 +60,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--red); outline-o
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbx1AfjqkgLj3_7VZF5862JlqcujiG3gLrZtRjlj2Nx4x_OwV8KZ5sjqSwy0kxjFoZLz/exec";
 const AREAS = ['산수','국어','동물','곤충','우주','지리','경제','역사','공룡','포켓몬'];
 const TOTAL = AREAS.length*10;
-const stampsFor = n => n>=TOTAL?15:n>=TOTAL-10?10:n>=TOTAL-20?5:0;
+const stampsFor = n => n>=90?15:n>=80?10:n>=70?5:0;
 const app = document.getElementById('app');
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const get = k => { try { return localStorage.getItem(k)||''; } catch(e){ return ''; } };

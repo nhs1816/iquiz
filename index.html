@@ -2643,10 +2643,23 @@ const app=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 let Q=null;
 
-// 우리 집 규칙: 한 주 100문제 중 맞힌 개수 → 뽑기 횟수. 100개 다 15번, 90개 이상 10번, 80개 이상 5번
+// 우리 집 규칙: 한 주 100문제 중 맞힌 개수 → 뽑기 횟수. 90개 이상 15번, 80개 이상 10번, 70개 이상 5번
 const TOTAL=TOPICS.length*10;
-const RULES=[[TOTAL,15],[TOTAL-10,10],[TOTAL-20,5]];
+const RULES=[[90,15],[80,10],[70,5]];
 const stampsFor=n=>{ for(const [min,k] of RULES) if(n>=min) return k; return 0; };
+// 규칙이 바뀌면 이미 다 푼 주도 새 규칙으로 다시 계산해서 모자란 뽑기를 더 줘요
+const OLD_RULES=[[100,15],[90,10],[80,5]];
+(function topUp(){
+  let changed=false;
+  for(const [key,w] of Object.entries(S.weeks)){
+    if(!w._g) continue;
+    const sum=TOPICS.reduce((s,t)=>s+(w[t.id]||0),0);
+    if(w._got==null){ w._got=0; for(const [min,k] of OLD_RULES) if(sum>=min){ w._got=k; break; } }
+    const now=stampsFor(sum);
+    if(now>w._got){ S.tickets=(S.tickets||0)+(now-w._got); w._got=now; changed=true; }
+  }
+  if(changed) save();
+})();
 function weekOf(key){ const d=S.weeks[key]||{}; const ids=TOPICS.map(t=>t.id).filter(id=>d[id]!=null);
   const sum=ids.reduce((s,id)=>s+d[id],0); return {d, n:ids.length, sum, max:sum+(TOPICS.length-ids.length)*10}; }
 const thisWeek=()=>weekOf(WEEK);
@@ -2813,7 +2826,7 @@ function finish(){
   S.weeks[WEEK]=S.weeks[WEEK]||{}; const first=S.weeks[WEEK][Q.topic];
   if(first==null) S.weeks[WEEK][Q.topic]=n;
   const T=thisWeek(); const got=stampsFor(T.sum);
-  if(T.n===TOPICS.length && !S.weeks[WEEK]._g){ S.weeks[WEEK]._g=1; S.tickets=(S.tickets||0)+got; }
+  if(T.n===TOPICS.length && !S.weeks[WEEK]._g){ S.weeks[WEEK]._g=1; S.weeks[WEEK]._got=got; S.tickets=(S.tickets||0)+got; }
   const miss=Q.list.filter((_,k)=>!Q.res[k]);
   let round=null;
   if(miss.length){ round={id:uid(), week:WEEK, date:TODAY, topic:Q.topic, total:miss.length, items:miss.map(strip)}; S.rounds=[round, ...S.rounds].slice(0,40); }
